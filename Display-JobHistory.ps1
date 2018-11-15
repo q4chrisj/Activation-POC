@@ -11,7 +11,7 @@ function ScanTable {
     return Invoke-Expression $cmd 
 }
 
-function GetJob {
+function GetActiveJob {
     $AttributeDetails= [pscustomobject]@{
         "S" = "STARTED"
     }
@@ -20,10 +20,34 @@ function GetJob {
     }
     
     $AttributeValues = $AttributeValues | ConvertTo-Json -Compress
-    
+
     $CurrentJob = ScanTable -TableName "DRActivation-Job" -Filter "JobState = :jobstate" -AttributeValues $AttributeValues
 
     return $CurrentJob | ConvertFrom-Json
+}
+
+function GetCompletedJobs {
+    $AttributeDetails= [pscustomobject]@{
+        "S" = "COMPLETED"
+    }
+    $AttributeValues = [pscustomobject]@{
+        ":jobstate" = $AttributeDetails
+    }
+    
+    $AttributeValues = $AttributeValues | ConvertTo-Json -Compress
+    
+    $CompletedJobs = ScanTable -TableName "DRActivation-Job" -Filter "JobState = :jobstate" -AttributeValues $AttributeValues
+
+    $CompletedJobs = $CompletedJobs | ConvertFrom-Json 
+
+    $CompletedJobs.Items | ForEach {
+        $_.Date = $_.Date.S
+        $_.JobState = $_.JobState.S
+        $_.JobId = $_.JobId.S
+        $_.JobName = $_.JobName.S
+    }
+
+    return $CompletedJobs
 }
 
 function GetJobHistory {
@@ -54,15 +78,33 @@ function GetJobHistory {
     return $JobHistory
 }
 
-$CurrentJob = GetJob
-$CurrentJobId = $CurrentJob.Items.JobId.S
-$JobHistory = GetJobHistory -JobId $CurrentJobId
+$CurrentJob = GetActiveJob
 
-Write-Host "Current Job $($CurrentJob.Items.JobName.S) started at $($CurrentJob.Items.Date.S)`n"
-foreach ($Item in $JobHistory.Items | Sort-Object -Property Date) {
-    if ($Item.Completed -eq "False") {
-        Write-Host "`t$($Item.StepName) started at $($Item.Date)"
-    } else {
-        Write-Host "`t$($Item.StepName) completed at $($Item.Date)`n"
-    }
+if($CurrentJob.Items.Count -gt 0) {
+    $CurrentJobId = $CurrentJob.Items.JobId.S
+    Clear-Host
+    do {
+        Write-Host "`nCurrent DR Activation Status`n"
+        $JobHistory = GetJobHistory -JobId $CurrentJobId
+        foreach ($Item in $JobHistory.Items | Sort-Object -Property Date) {
+            if ($Item.Completed -eq "False") {
+                Write-Host "`t$($Item.StepName) started at $($Item.Date)"
+            } else {
+                Write-Host "`t$($Item.StepName) completed at $($Item.Date)`n"
+            }
+        }
+
+        Start-Sleep 30
+
+        $CurrentJob = GetJob
+        Clear-Host
+    } until ($CurrentJob.JobState.S -eq "COMPLETED")
+
+    Write-Host "DR activation complete."
+} else {
+    Write-Host "DR is not being activated at this time.`n"
 }
+
+Write-Host "Completed Jobs"
+$CompletedJobs = GetCompletedJobs
+$CompletedJobs.Items | Sort-Object -Property Date | Select-Object Date, JobState

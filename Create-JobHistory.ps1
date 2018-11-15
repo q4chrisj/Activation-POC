@@ -57,14 +57,12 @@ $Job = CreateActivationJob
 $JobData = $Job | ConvertTo-Json -Compress
 PutItem -TableName "DRActivation-Job" -Payload $JobData
 
-Start-Sleep 30
-
 Write-Host "Starting Primary Instance Activation"
 $JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Primary Instance Activation" -Date $(Get-Date) -Completed "False"
 $JobHistoryData = $JobHistory | ConvertTo-Json -Compress
 PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
 
-Start-Sleep 60
+Start-Sleep 10
 
 $JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Primary Instance Activation" -Date $(Get-Date) -Completed "True"
 $JobHistoryData = $JobHistory | ConvertTo-Json -Compress
@@ -86,7 +84,7 @@ $JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Clientfiles Restor
 $JobHistoryData = $JobHistory | ConvertTo-Json -Compress
 PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
 
-Start-Sleep 30
+Start-Sleep 10
 
 $JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Clientfiles Restore" -Date $(Get-Date) -Completed "True"
 $JobHistoryData = $JobHistory | ConvertTo-Json -Compress
@@ -97,7 +95,7 @@ $JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Secondary Instance
 $JobHistoryData = $JobHistory | ConvertTo-Json -Compress
 PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
 
-Start-Sleep 30
+Start-Sleep 10
 
 $JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Secondary Instance Activation" -Date $(Get-Date) -Completed "True"
 $JobHistoryData = $JobHistory | ConvertTo-Json -Compress
@@ -108,8 +106,15 @@ $JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Enable Live Mode" 
 $JobHistoryData = $JobHistory | ConvertTo-Json -Compress
 PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
 
-Start-Sleep 30
+Start-Sleep 10
 
 $JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Enable Live Mode" -Date $(Get-Date) -Completed "True"
 $JobHistoryData = $JobHistory | ConvertTo-Json -Compress
 PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+
+Write-Host "`nDR activation complete."
+Start-Sleep 120
+
+$Job.JobState.S = "COMPLETED"
+$JobData = $Job | ConvertTo-Json -Compress
+PutItem -TableName "DRActivation-Job" -Payload $JobData
