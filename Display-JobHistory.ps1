@@ -94,13 +94,14 @@ if($CurrentJob.Items.Count -gt 0) {
             }
         }
 
-        Start-Sleep 30
+        $CurrentJob = GetActiveJob
 
-        $CurrentJob = GetJob
+        Start-Sleep 20
+
         Clear-Host
-    } until ($CurrentJob.JobState.S -eq "COMPLETED")
+    } until ($CurrentJob.Count -eq 0)
 
-    Write-Host "DR activation complete."
+    Write-Host "DR activation complete.`n"
 } else {
     Write-Host "DR is not being activated at this time.`n"
 }

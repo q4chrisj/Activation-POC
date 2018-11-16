@@ -112,9 +112,9 @@ $JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Enable Live Mode" 
 $JobHistoryData = $JobHistory | ConvertTo-Json -Compress
 PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
 
-Write-Host "`nDR activation complete."
-Start-Sleep 120
+Start-Sleep 60
 
+Write-Host "`nDR activation complete."
 $Job.JobState.S = "COMPLETED"
 $JobData = $Job | ConvertTo-Json -Compress
 PutItem -TableName "DRActivation-Job" -Payload $JobData
