@@ -1,0 +1,26 @@
+service: dr-activation-api # NOTE: update this with your service name
+
+provider:
+  name: aws
+  runtime: nodejs8.10
+  profile: dr-admin
+  region: 'us-west-1'
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:us-west-1:481636229104:table/DRActivation-Job"
+
+functions:
+  list:
+    handler: handler.getJobs
+    events:
+      - http:
+          path: jobs
+          method: get
+          cors: true
