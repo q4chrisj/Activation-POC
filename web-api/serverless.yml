@@ -15,12 +15,28 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: "arn:aws:dynamodb:us-west-1:481636229104:table/DRActivation-Job"
+    - Effect: Allow
+      Action:
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: "arn:aws:dynamodb:us-west-1:481636229104:table/DRActivation-JobHistory"
 
 functions:
-  list:
+  jobs:
     handler: handler.getJobs
     events:
       - http:
           path: jobs
+          method: get
+          cors: true
+  jobHistory:
+    handler: handler.jobHistory
+    events:
+      - http:
+          path: jobHistory/{jobId}
           method: get
           cors: true

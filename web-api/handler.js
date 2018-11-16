@@ -2,38 +2,61 @@
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
-module.exports.getJobs = async (event, context, callback) => {
+module.exports.getJobs = (event, context, callback) => {
   const params = {
-    TableName: "DRActivation-Job",
+    TableName: "DRActivation-Job"
   };
 
   dynamoDb.scan(params, (error, result) => {
-    // handle potential errors
-    // if (error) {
-    //   console.log("Error encountered");
-    //   console.error(error);
-    //   context.error({
-    //     'isBase64Encoded': false,
-    //     'statusCode': error.statusCode || 501,
-    //     'headers': { 'Content-Type': 'text/plain' },
-    //     'body': JSON.stringify({
-    //       message:'Error fetching the job'
-    //     })
-    //   });
+    if (error) {
+      console.error(error);
+      callback(null,{
+        "statusCode": 500,
+        "body": JSON.stringify({
+          "message":'Error fetching the job'
+        })
+      });
+      return;
+    }
 
-    // }
+    var response = {
+      "statusCode": 200,
+      "body": JSON.stringify({jobs:result.Items})
+    }
+    
+    callback(null, response);
+  });
+};
+
+module.exports.jobHistory = (event, context, callback) => {
+
+  const params = {
+    ExpressionAttributeValues: {
+      ":jobid": event.pathParameters.jobId
+    },
+    FilterExpression: "JobId = :jobid",
+    TableName: "DRActivation-JobHistory"
+  };
+
+  dynamoDb.scan(params, (error, result) => {
+    if (error) {
+      console.error(error);
+      callback(null,{
+        "statusCode": 500,
+        "body": JSON.stringify({
+          "message":'Error fetching job history'
+        })
+      });
+      return;
+    }
 
     console.log(result);
 
-    // create a response
     var response = {
-      "isBase64Encoded": false,
       "statusCode": 200,
-      "headers": { 'Content-Type': 'application/json'},
-      "body": JSON.stringify(result.Item),
-    };
+      "body": JSON.stringify({jobs:result.Items})
+    }
     
     callback(null, response);
-
   });
-}
+};
