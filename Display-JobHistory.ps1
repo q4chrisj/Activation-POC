@@ -107,4 +107,4 @@ if($CurrentJob.Items.Count -gt 0) {
 
 Write-Host "Completed Jobs"
 $CompletedJobs = GetCompletedJobs
-$CompletedJobs.Items | Sort-Object -Property Date | Select-Object Date, JobName, JobState
+$CompletedJobs.Items | Sort-Object -Property Date -Descending | Select-Object Date, JobName, JobState
