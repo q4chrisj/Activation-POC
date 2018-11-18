@@ -1,11 +1,21 @@
 'use strict';
+
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
 module.exports.getJobs = (event, context, callback) => {
-  const params = {
-    TableName: "DRActivation-Job"
+  var params = {
+    TableName: "DRActivation-Job" 
   };
+
+  if(event.pathParameters && event.pathParameters.state) {
+    params.ExpressionAttributeValues = {
+        ":state": event.pathParameters.state
+    };
+    params.FilterExpression = "JobState = :state";
+  }
+
+  console.log(params);  
 
   dynamoDb.scan(params, (error, result) => {
     if (error) {
@@ -29,14 +39,28 @@ module.exports.getJobs = (event, context, callback) => {
 };
 
 module.exports.jobHistory = (event, context, callback) => {
+  if(event.pathParameters == null || event.pathParameters.jobId == null) {
+    callback(null,{
+      "statusCode": 400,
+      "body": JSON.stringify({
+        "message":'Missing required parameter jobId'
+      })
+    }); 
+    return;
+  }
 
-  const params = {
-    ExpressionAttributeValues: {
-      ":jobid": event.pathParameters.jobId
-    },
-    FilterExpression: "JobId = :jobid",
+  var params = {
     TableName: "DRActivation-JobHistory"
   };
+
+  if(event.pathParameters && event.pathParameters.jobId) {
+    params.ExpressionAttributeValues = {
+      ":jobid": event.pathParameters.jobId
+    };
+    params.FilterExpression = "JobId = :jobid";
+  }
+
+  console.log(params);
 
   dynamoDb.scan(params, (error, result) => {
     if (error) {
@@ -49,8 +73,6 @@ module.exports.jobHistory = (event, context, callback) => {
       });
       return;
     }
-
-    console.log(result);
 
     var response = {
       "statusCode": 200,

@@ -30,6 +30,10 @@ functions:
     handler: handler.getJobs
     events:
       - http:
+          path: jobs/{state}
+          method: get
+          cors: true
+      - http:
           path: jobs
           method: get
           cors: true
@@ -38,5 +42,9 @@ functions:
     events:
       - http:
           path: jobHistory/{jobId}
+          method: get
+          cors: true
+      - http:
+          path: jobHistory
           method: get
           cors: true
