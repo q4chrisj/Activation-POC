@@ -1,5 +1,6 @@
 'use strict';
 
+const uuid = require('uuid');
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 
@@ -14,8 +15,6 @@ module.exports.getJobs = (event, context, callback) => {
     };
     params.FilterExpression = "JobState = :state";
   }
-
-  console.log(params);  
 
   dynamoDb.scan(params, (error, result) => {
     if (error) {
@@ -38,17 +37,79 @@ module.exports.getJobs = (event, context, callback) => {
   });
 };
 
-module.exports.jobHistory = (event, context, callback) => {
-  if(event.pathParameters == null || event.pathParameters.jobId == null) {
-    callback(null,{
-      "statusCode": 400,
-      "body": JSON.stringify({
-        "message":'Missing required parameter jobId'
-      })
-    }); 
-    return;
-  }
+module.exports.createJob = (event, context, callback) => {
+  const timestamp = new Date().toLocaleString(undefined, {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const data = JSON.parse(event.body);
+  const params = {
+    TableName: "DRActivation-Job",
+    Item: {
+      JobId: uuid.v1(),
+      JobName: "DR Activation",
+      JobState: data.JobState,
+      Date: timestamp
+    }
+  };
 
+  dynamoDb.put(params, (error) => {
+    if (error) {
+      console.error(error);
+      callback(null,{
+        "statusCode": 500,
+        "body": JSON.stringify({
+          "message":'Error creating the job'
+        })
+      });
+      return;
+    }
+  });
+
+  const response = {
+    "statusCode": 200,
+    "body": JSON.stringify(params.Item)
+  };
+
+  callback(null, response);
+};
+
+module.exports.completeJob = (event, context, callback) => {
+  const data = JSON.parse(event.body);
+  
+  const params = {
+    TableName: "DRActivation-Job",
+    Item: {
+      JobId: data.JobId,
+      JobState: "COMPLETED"
+    }
+  };
+
+  dynamoDb.put(params, (error) => {
+    if (error) {
+      console.error(error);
+      callback(null,{
+        "statusCode": 500,
+        "body": JSON.stringify({
+          "message":'Error completing the job'
+        })
+      });
+      return;
+    }
+  });
+
+  const response = {
+    "statusCode": 200,
+    "body": JSON.stringify(params.Item)
+  };
+
+  callback(null, response);  
+};
+
+module.exports.jobHistory = (event, context, callback) => {
   var params = {
     TableName: "DRActivation-JobHistory"
   };
@@ -59,8 +120,6 @@ module.exports.jobHistory = (event, context, callback) => {
     };
     params.FilterExpression = "JobId = :jobid";
   }
-
-  console.log(params);
 
   dynamoDb.scan(params, (error, result) => {
     if (error) {
@@ -81,4 +140,46 @@ module.exports.jobHistory = (event, context, callback) => {
     
     callback(null, response);
   });
+};
+
+module.exports.createJobHistory = (event, context, callback) => {
+  const timestamp = new Date().toLocaleString(undefined, {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const data = JSON.parse(event.body);
+
+  const params = {
+    TableName: "DRActivation-JobHistory",
+    Item: {
+      JobHistoryId: uuid.v1(),
+      JobId: data.JobId,
+      Completed: data.Completed,
+      StepName: data.StepName,
+      Date: timestamp
+    }
+  };
+
+  dynamoDb.put(params, (error) => {
+    if (error) {
+      console.error(error);
+      callback(null,{
+        "statusCode": 500,
+        "body": JSON.stringify({
+          "message":'Error creating the job'
+        })
+      });
+      return;
+    }
+  });
+
+  const response = {
+    "statusCode": 200,
+    "body": JSON.stringify(params.Item)
+  };
+
+  callback(null, response);
 };

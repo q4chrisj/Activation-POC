@@ -37,6 +37,20 @@ functions:
           path: jobs
           method: get
           cors: true
+  createJob:
+    handler: handler.createJob
+    events:
+      - http:
+          path: jobs
+          method: post
+          cors: true
+  completeJob:
+    handler: handler.completeJob
+    events:
+      - http:
+          path: jobs
+          method: PUT
+          cors: true
   jobHistory:
     handler: handler.jobHistory
     events:

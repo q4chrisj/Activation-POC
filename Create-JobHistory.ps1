@@ -1,120 +1,100 @@
-function CreateStringDataObject {
-    param(
-        [string] $Value
-    )
-
-    $StringObject = [pscustomobject]@{
-        "S" = $Value
-    }
-
-    return $StringObject
-}
+$ApiBaseUrl = "https://jarmnj5kh6.execute-api.us-west-1.amazonaws.com"
 
 function CreateActivationJob {
-    $ActivationJob = [pscustomobject]@{
-        JobId = CreateStringDataObject -Value ([guid]::NewGuid().ToString())
-        JobName = CreateStringDataObject -Value "DR Activation"
-        JobState = CreateStringDataObject -Value "STARTED"
-        Date = CreateStringDataObject -Value $(Get-Date).ToString()
-    }
+    param(
+        [string] $JobState
+    )
 
-    return $ActivationJob
+    $Job = @{
+        JobState = "STARTED"
+    } | ConvertTo-Json
+ 
+    $Request = Invoke-WebRequest -Method Post -Uri "$ApiBaseUrl/dev/jobs" -Body $Job
+
+    $Request | ConvertFrom-Json
+
+    return $Request.Content
+}
+
+function CompleteActiveJob {
+    param(
+        [object] $CurrentJob
+    )
+
+    $CompletedJob = @{
+        JobId = $CurrentJob.JobId
+        Date = $CurrentJob.Date
+        JobName = $CurrentJob.JobName
+    } | ConvertTo-Json
+
+    $Request = Invoke-WebRequest -Method Put -Uri "$ApiBaseUrl/dev/jobs" -Body $CompletedJob
+
+    $Request | ConvertFrom-Json
+
+    return $Request.Content
 }
 
 function CreateJobHistory {
     param(
         [string] $JobId,
         [string] $StepName,
-        [string] $Date,
         [string] $Completed
     )
 
-    $JobHistory = [pscustomobject]@{
-        JobHistoryId = CreateStringDataObject -Value $([guid]::NewGuid().ToString())
-        JobId = CreateStringDataObject -Value $JobId
-        StepName = CreateStringDataObject -Value $StepName
-        Date = CreateStringDataObject -Value $Date
-        Completed = CreateStringDataObject -Value $Completed
-    }
+    $JobHistory = @{
+        JobId = $JobId
+        StepName = $StepName
+        Completed = $Completed
+    } | ConvertTo-Json
 
-    return $JobHistory
-}
+    $Request = Invoke-WebRequest -Method Post -Uri "$ApiBaseUrl/dev/jobs" -Body $JobHistory
 
-function PutItem {
-    param(
-        [string] $TableName,
-        [string] $Payload
-    )
+    $Request | ConvertFrom-Json
 
-    $Payload = $Payload.Replace('"', '\"') # AWS cli requires this
-    $cmd = "aws dynamodb put-item --table-name $TableName --item '$Payload' --profile dr-admin --region us-west-1"
-
-    Invoke-Expression $cmd
+    return $JobHistory.Content
 }
 
 Write-Host "Starting DR Activation Job"
 $Job = CreateActivationJob
-$JobData = $Job | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-Job" -Payload $JobData
 
+<#
 Write-Host "Starting Primary Instance Activation"
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Primary Instance Activation" -Date $(Get-Date) -Completed "False"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Primary Instance Activation" -Completed "False"
 
 Start-Sleep 10
 
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Primary Instance Activation" -Date $(Get-Date) -Completed "True"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Primary Instance Activation" -Completed "True"
 
 Write-Host "Starting Database Restore"
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Database Restore" -Date $(Get-Date) -Completed "False"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Database Restore" -Completed "False"
 
 Start-Sleep 10
 
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Database Restore" -Date $(Get-Date) -Completed "True"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Database Restore" -Completed "True"
 
 Write-Host "Starting client files restore"
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Clientfiles Restore" -Date $(Get-Date) -Completed "False"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Clientfiles Restore" -Completed "False"
 
 Start-Sleep 10
 
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Clientfiles Restore" -Date $(Get-Date) -Completed "True"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Clientfiles Restore" -Completed "True"
 
 Write-Host "Starting Secondary Instance Activation"
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Secondary Instance Activation" -Date $(Get-Date) -Completed "False"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Secondary Instance Activation" -Completed "False"
 
 Start-Sleep 10
 
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Secondary Instance Activation" -Date $(Get-Date) -Completed "True"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Secondary Instance Activation" -Completed "True"
 
 Write-Host "Starting Enable Live Mode"
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Enable Live Mode" -Date $(Get-Date) -Completed "False"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Enable Live Mode" -Completed "False"
 
 Start-Sleep 10
 
-$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Enable Live Mode" -Date $(Get-Date) -Completed "True"
-$JobHistoryData = $JobHistory | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-JobHistory" -Payload $JobHistoryData
+$JobHistory = CreateJobHistory -JobId $Job.JobId.S -StepName "Enable Live Mode" -Completed "True"
 
 Start-Sleep 60
+#>
 
 Write-Host "`nDR activation complete."
-$Job.JobState.S = "COMPLETED"
-$JobData = $Job | ConvertTo-Json -Compress
-PutItem -TableName "DRActivation-Job" -Payload $JobData
+$CompletedJob = CompleteActiveJob -CurrentJob $Job

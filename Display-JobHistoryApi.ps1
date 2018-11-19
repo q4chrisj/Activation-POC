@@ -1,5 +1,7 @@
+$ApiBaseUrl = "https://jarmnj5kh6.execute-api.us-west-1.amazonaws.com"
+
 function GetJobs {
-    $Results = Invoke-WebRequest -Uri "https://r4gl9l7eyb.execute-api.us-west-1.amazonaws.com/dev/jobs"
+    $Results = Invoke-WebRequest -Uri "$ApiBaseUrl/dev/jobs"
 
     $Results = $Results | ConvertFrom-Json
 
