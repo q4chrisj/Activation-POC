@@ -12,9 +12,30 @@
 </head>
 
 <body>
-  <div id="app">
+  
+  <div class="container" id="app">
+      <h1>DR Activation Jobs</h1>
+      <table class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col">#</th>
+              <th scope="col">Job Name</th>
+              <th scope="col">Date</th>
+              <th scope="col">Status</th>
+            </tr>
+          </thead>
+          <tbody id="job-list">
 
+            </tbody>
+        </table>
   </div>
+
+  <script type="text/template" id="job-template">
+    <td><%- JobId %></td>
+    <td><%- JobName %></td>
+    <td><%- Date %></td>
+    <td><%- JobState %></td>
+  </script>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="js/underscore-min.js"></script>
   <script src="js/backbone-min.js"></script>
@@ -22,29 +43,65 @@
   <script>
 
     window.onload = function() {
-      var Job = Backbone.Model.extend({});
+      var Job = Backbone.Model.extend({
+        url: 'https://jarmnj5kh6.execute-api.us-west-1.amazonaws.com/dev/jobs/',
+        defaults: function() {
+          return {
+            JobState: "STARTED"
+          }
+        }
+      });
+
+      // var Job = new Job;
+      // Job.save();
 
       var JobList = Backbone.Collection.extend({
         url: 'https://jarmnj5kh6.execute-api.us-west-1.amazonaws.com/dev/jobs/',
         model: Job,
         parse: function(response) {
-          console.log(response);
           return response.jobs;
         }
       });
       
       var Jobs = new JobList;
 
+      var JobView = Backbone.View.extend({
+        tagName: 'tr',
+
+        template:_.template(document.getElementById('job-template').innerHTML),
+
+        render: function() {
+          this.$el.html(this.template(this.model.toJSON()));
+          return this;
+        }
+      });
+
       var AppView = Backbone.View.extend({
-        el: 'body',
+        el: document.getElementById('app'),
 
         initialize: function() {
+          this.listenTo(Jobs, 'add', this.addOne);
+          this.listenTo(Jobs, 'reset', this.addAll);
+          this.listenTo(Jobs, 'all', this.render);
+
           Jobs.fetch();
         },
 
         render: function() {
           console.log("render");
-        }
+        },
+
+        addOne: function(job) {
+          var view = new JobView({model: job});
+          var jobList = document.getElementById('job-list');
+          console.log(jobList);
+          document.getElementById('job-list').append(view.render().el);
+        },
+
+        // Add all items in the **Todos** collection at once.
+        addAll: function() {
+          Jobs.each(this.addOne, this);
+        },        
       });
 
       var App = new AppView;
