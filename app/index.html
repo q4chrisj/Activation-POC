@@ -1,0 +1,55 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>DR Activation Viewer</title>
+  <meta name="description" content="The HTML5 Herald">
+  <meta name="author" content="SitePoint">
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+
+<body>
+  <div id="app">
+
+  </div>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="js/underscore-min.js"></script>
+  <script src="js/backbone-min.js"></script>
+
+  <script>
+
+    window.onload = function() {
+      var Job = Backbone.Model.extend({});
+
+      var JobList = Backbone.Collection.extend({
+        url: 'https://jarmnj5kh6.execute-api.us-west-1.amazonaws.com/dev/jobs/',
+        model: Job,
+        parse: function(response) {
+          console.log(response);
+          return response.jobs;
+        }
+      });
+      
+      var Jobs = new JobList;
+
+      var AppView = Backbone.View.extend({
+        el: 'body',
+
+        initialize: function() {
+          Jobs.fetch();
+        },
+
+        render: function() {
+          console.log("render");
+        }
+      });
+
+      var App = new AppView;
+    };
+  </script>
+
+</body>
+</html>

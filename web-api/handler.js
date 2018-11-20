@@ -21,6 +21,10 @@ module.exports.getJobs = (event, context, callback) => {
       console.error(error);
       callback(null,{
         "statusCode": 500,
+        "headers": {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
         "body": JSON.stringify({
           "message":'Error fetching the job'
         })
@@ -30,6 +34,10 @@ module.exports.getJobs = (event, context, callback) => {
 
     var response = {
       "statusCode": 200,
+      "headers": {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
       "body": JSON.stringify({jobs:result.Items})
     }
     
@@ -61,6 +69,10 @@ module.exports.createJob = (event, context, callback) => {
       console.error(error);
       callback(null,{
         "statusCode": 500,
+        "headers": {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
         "body": JSON.stringify({
           "message":'Error creating the job'
         })
@@ -71,6 +83,10 @@ module.exports.createJob = (event, context, callback) => {
 
   const response = {
     "statusCode": 200,
+    "headers": {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
     "body": JSON.stringify(params.Item)
   };
 
@@ -93,6 +109,10 @@ module.exports.completeJob = (event, context, callback) => {
       console.error(error);
       callback(null,{
         "statusCode": 500,
+        "headers": {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
         "body": JSON.stringify({
           "message":'Error completing the job'
         })
@@ -126,6 +146,10 @@ module.exports.jobHistory = (event, context, callback) => {
       console.error(error);
       callback(null,{
         "statusCode": 500,
+        "headers": {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
         "body": JSON.stringify({
           "message":'Error fetching job history'
         })
@@ -135,6 +159,10 @@ module.exports.jobHistory = (event, context, callback) => {
 
     var response = {
       "statusCode": 200,
+      "headers": {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
       "body": JSON.stringify({jobs:result.Items})
     }
     
@@ -168,6 +196,10 @@ module.exports.createJobHistory = (event, context, callback) => {
       console.error(error);
       callback(null,{
         "statusCode": 500,
+        "headers": {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Credentials': true,
+        },
         "body": JSON.stringify({
           "message":'Error creating the job'
         })
@@ -178,6 +210,10 @@ module.exports.createJobHistory = (event, context, callback) => {
 
   const response = {
     "statusCode": 200,
+    "headers": {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
     "body": JSON.stringify(params.Item)
   };
 
