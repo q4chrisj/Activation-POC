@@ -18,7 +18,17 @@
     </div>
   </header>
   <div class="container" id="app">
-    <h3>Current DR Activation Progress</h3>
+    <div class="row">
+      <div class="col">
+        <br />
+        <h3>Current DR Activation Progress</h3>
+        <div id="current-jobs" class="jumbotron">
+          <div class="row">
+            <div class="col">There are currently no DR activation's happening.</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
   <div class="container" id="app">
     <h3>DR Activation Jobs</h3>
@@ -72,104 +82,20 @@
   <script src="js/config.js"></script>
   <script src="js/jobModel.js"></script>
   <script src="js/jobHistoryModel.js"></script>
+  <script src="js/achivedJobViews.js"></script>
 
   <script>
     window.onload = function() {
-      var Jobs = new JobList;
-      var JobHistory = new JobHistoryList;
+      var StartedJob = new Job();
+      StartedJob.fetch({ url: appConfig.apiUrl + "/jobs/started"})
+      console.log(StartedJob);
 
-      var JobHistoryView = Backbone.View.extend({ 
-        tagName: 'tr',
-        template: _.template($('#job-history-template').html()),
 
-        initialize: function() {
-          this.listenTo(this.model, 'change', this.render)
-        },
+      var CurrentJobController = Backbone.View.extend({
 
-        render: function() {
-          this.$el.html(this.template(this.model.toJSON()));
-          return this;
-        },
-
-        close: function() {
-          this.remove();
-        }
       });
 
-      var JobHistoryController = Backbone.View.extend({
-        el: $('#job-history-list'),
-
-        initialize: function() {
-          this.listenTo(JobHistory, 'sync', this.render);
-
-          JobHistory.fetch({url:appConfig.apiUrl + "/jobHistory/" + this.model.id, reset:true});
-        },
-
-        render: function() {
-          this.$el.empty();
-
-          JobHistory.each(function(jobHistory) {
-            var view = new JobHistoryView({model: jobHistory});
-            $('#job-history-list').append(view.render().el);  
-          });
-          
-          return this;
-        }
-      });
-
-      var JobView = Backbone.View.extend({
-        tagName: 'tr',
-        template:_.template($('#job-template').html()),
-        events: {
-          "click .mark-complete": "markComplete",
-          "click .view-details": "viewDetails"
-        },
-
-        initialize: function() {
-          this.listenTo(this.model, 'change', this.render);
-        },
-
-        render: function() {
-          this.$el.html(this.template(this.model.toJSON()));
-          return this;
-        },
-
-        markComplete: function() {
-          this.model.set({JobState:"COMPLETED"}); 
-          this.model.save();
-        },
-
-        viewDetails: function() {
-          var HistoryController = new JobHistoryController({model:this.model});
-        }
-      });
-
-      var AppView = Backbone.View.extend({
-        el: $('#app'),
-
-        initialize: function() {
-          this.listenTo(Jobs, 'add', this.addOne);
-          this.listenTo(Jobs, 'reset', this.addAll);
-          this.listenTo(Jobs, 'all', this.render);
-
-          Jobs.fetch();
-        },
-
-        render: function() {
-          return this;
-        },
-
-        addOne: function(job) {
-          var view = new JobView({model: job});
-          $('#job-list').append(view.render().el);
-        },
-
-        addAll: function() {
-          Jobs.each(this.addOne, this);
-        }
-      });
-
-      var App = new AppView;
+      var ArchivedJobController = new JobController;
     };
   </script>
 
