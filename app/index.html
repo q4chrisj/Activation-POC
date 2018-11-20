@@ -88,13 +88,11 @@
         },
 
         render: function() {
-          console.log("render");
+
         },
 
         addOne: function(job) {
           var view = new JobView({model: job});
-          var jobList = document.getElementById('job-list');
-          console.log(jobList);
           document.getElementById('job-list').append(view.render().el);
         },
 
