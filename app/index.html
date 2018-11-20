@@ -74,7 +74,6 @@
   <script src="js/jobHistoryModel.js"></script>
 
   <script>
-
     window.onload = function() {
       var Jobs = new JobList;
       var JobHistory = new JobHistoryList;
@@ -90,34 +89,31 @@
         render: function() {
           this.$el.html(this.template(this.model.toJSON()));
           return this;
-        }            
+        },
+
+        close: function() {
+          this.remove();
+        }
       });
 
       var JobHistoryController = Backbone.View.extend({
         el: $('#job-history-list'),
 
         initialize: function() {
-          this.listenTo(JobHistory, 'sync', this.addAll);
-          this.listenTo(JobHistory, 'all', this.render);
+          this.listenTo(JobHistory, 'sync', this.render);
 
           JobHistory.fetch({url:appConfig.apiUrl + "/jobHistory/" + this.model.id, reset:true});
-
-          this.views = [];
         },
 
         render: function() {
+          this.$el.empty();
+
+          JobHistory.each(function(jobHistory) {
+            var view = new JobHistoryView({model: jobHistory});
+            $('#job-history-list').append(view.render().el);  
+          });
+          
           return this;
-        },
-        
-        addOne: function(jobHistory) {
-          var view = new JobHistoryView({model: jobHistory});
-          $('#job-history-list').append(view.render().el);
-
-          this.views.push(view);
-        },
-
-        addAll: function() {
-          JobHistory.each(this.addOne, this);
         }
       });
 
@@ -131,8 +127,6 @@
 
         initialize: function() {
           this.listenTo(this.model, 'change', this.render);
-
-          this.views = []
         },
 
         render: function() {
@@ -147,15 +141,11 @@
 
         viewDetails: function() {
           var HistoryController = new JobHistoryController({model:this.model});
-
-          this.views.push(HistoryController);
-
-          console.log(this.views[0].views.length);
         }
       });
 
       var AppView = Backbone.View.extend({
-        el: document.getElementById('app'),
+        el: $('#app'),
 
         initialize: function() {
           this.listenTo(Jobs, 'add', this.addOne);
