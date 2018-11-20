@@ -27,7 +27,7 @@ provider:
 
 functions:
   jobs:
-    handler: handler.getJobs
+    handler: jobHandler.getJobs
     events:
       - http:
           path: jobs/{state}
@@ -38,27 +38,30 @@ functions:
           method: get
           cors: true
   createJob:
-    handler: handler.createJob
+    handler: jobHandler.createJob
     events:
       - http:
           path: jobs
           method: post
           cors: true
   completeJob:
-    handler: handler.completeJob
+    handler: jobHandler.completeJob
     events:
       - http:
           path: jobs
           method: PUT
           cors: true
   jobHistory:
-    handler: handler.jobHistory
+    handler: jobHistoryHandler.jobHistory
     events:
       - http:
           path: jobHistory/{jobId}
           method: get
           cors: true
+  createJobHistory:
+    handler: jobHistoryHandler.createJobHistory
+    events:
       - http:
           path: jobHistory
-          method: get
+          method: post
           cors: true

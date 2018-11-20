@@ -53,6 +53,7 @@ module.exports.createJob = (event, context, callback) => {
     hour: '2-digit',
     minute: '2-digit',
   });
+
   const data = JSON.parse(event.body);
   const params = {
     TableName: "DRActivation-Job",
@@ -94,13 +95,23 @@ module.exports.createJob = (event, context, callback) => {
 };
 
 module.exports.completeJob = (event, context, callback) => {
+  const timestamp = new Date().toLocaleString(undefined, {
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
   const data = JSON.parse(event.body);
   
   const params = {
     TableName: "DRActivation-Job",
     Item: {
       JobId: data.JobId,
-      JobState: "COMPLETED"
+      JobName: data.JobName,
+      JobState: "COMPLETED",
+      Date: data.Date
     }
   };
 
@@ -123,93 +134,6 @@ module.exports.completeJob = (event, context, callback) => {
 
   const response = {
     "statusCode": 200,
-    "body": JSON.stringify(params.Item)
-  };
-
-  callback(null, response);  
-};
-
-module.exports.jobHistory = (event, context, callback) => {
-  var params = {
-    TableName: "DRActivation-JobHistory"
-  };
-
-  if(event.pathParameters && event.pathParameters.jobId) {
-    params.ExpressionAttributeValues = {
-      ":jobid": event.pathParameters.jobId
-    };
-    params.FilterExpression = "JobId = :jobid";
-  }
-
-  dynamoDb.scan(params, (error, result) => {
-    if (error) {
-      console.error(error);
-      callback(null,{
-        "statusCode": 500,
-        "headers": {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true,
-        },
-        "body": JSON.stringify({
-          "message":'Error fetching job history'
-        })
-      });
-      return;
-    }
-
-    var response = {
-      "statusCode": 200,
-      "headers": {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      "body": JSON.stringify({jobs:result.Items})
-    }
-    
-    callback(null, response);
-  });
-};
-
-module.exports.createJobHistory = (event, context, callback) => {
-  const timestamp = new Date().toLocaleString(undefined, {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  const data = JSON.parse(event.body);
-
-  const params = {
-    TableName: "DRActivation-JobHistory",
-    Item: {
-      JobHistoryId: uuid.v1(),
-      JobId: data.JobId,
-      Completed: data.Completed,
-      StepName: data.StepName,
-      Date: timestamp
-    }
-  };
-
-  dynamoDb.put(params, (error) => {
-    if (error) {
-      console.error(error);
-      callback(null,{
-        "statusCode": 500,
-        "headers": {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': true,
-        },
-        "body": JSON.stringify({
-          "message":'Error creating the job'
-        })
-      });
-      return;
-    }
-  });
-
-  const response = {
-    "statusCode": 200,
     "headers": {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Credentials': true,
@@ -217,5 +141,5 @@ module.exports.createJobHistory = (event, context, callback) => {
     "body": JSON.stringify(params.Item)
   };
 
-  callback(null, response);
+  callback(null, response);  
 };

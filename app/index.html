@@ -12,9 +12,16 @@
 </head>
 
 <body>
-  
+  <header class="navbar navbar-dark bg-dark shadow-sm">
+    <div class="container">
+      <h1 class="navbar-brand">DR Activation Dashboard</h1>
+    </div>
+  </header>
   <div class="container" id="app">
-    <h1>DR Activation Jobs</h1>
+    <h3>Current DR Activation Progress</h3>
+  </div>
+  <div class="container" id="app">
+    <h3>DR Activation Jobs</h3>
     <div class="row">
       <div class="col-5" id="jobs">
         <table class="table table-sm">
@@ -35,13 +42,13 @@
                 <thead class="thead-dark">
                   <tr>
                     <th scope="col">Date</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Actions</th>
+                    <th scope="col">Step Name</th>
+                    <th scope="col">Completed</th>
                   </tr>
                 </thead>
-                <tbody id="job-list">
+                <tbody id="job-history-list">
     
-                  </tbody>
+                </tbody>
               </table>
         </div>
     </div>
@@ -50,43 +57,73 @@
   <script type="text/template" id="job-template">
     <td><%- Date %></td>
     <td><%- JobState %></td>
-    <td><a href="#" class="mark-complete">Complete</a> <a href="#" class=view-details">Details</a>
+    <td><a href="#" class="mark-complete">Complete</a> <a href="#" class="view-details">Details</a>
   </script>
+  
+  <script type="text/template" id="job-history-template">
+    <td><%- Date %></td>
+    <td><%- StepName %></td>
+    <td><%- Completed %></a>
+  </script>
+
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="js/underscore-min.js"></script>
   <script src="js/backbone-min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/jobModel.js"></script>
+  <script src="js/jobHistoryModel.js"></script>
 
   <script>
 
     window.onload = function() {
-      var Job = Backbone.Model.extend({
-        url: 'https://jarmnj5kh6.execute-api.us-west-1.amazonaws.com/dev/jobs/',
-        defaults: function() {
-          return {
-            JobState: "STARTED"
-          }
+      var Jobs = new JobList;
+      var JobHistory = new JobHistoryList;
+
+      var JobHistoryView = Backbone.View.extend({ 
+        tagName: 'tr',
+        template: _.template($('#job-history-template').html()),
+
+        initialize: function() {
+          this.listenTo(this.model, 'change', this.render)
         },
-        id: 'JobId'
+
+        render: function() {
+          this.$el.html(this.template(this.model.toJSON()));
+          return this;
+        }            
       });
 
-      // var Job = new Job;
-      // Job.save();
+      var JobHistoryController = Backbone.View.extend({
+        el: $('#job-history-list'),
 
-      var JobList = Backbone.Collection.extend({
-        url: 'https://jarmnj5kh6.execute-api.us-west-1.amazonaws.com/dev/jobs/',
-        model: Job,
-        parse: function(response) {
-          return response.jobs;
+        initialize: function() {
+          this.listenTo(JobHistory, 'sync', this.addAll);
+          this.listenTo(JobHistory, 'all', this.render);
+
+          JobHistory.fetch({url:appConfig.apiUrl + "/jobHistory/" + this.model.id, reset:true});
+
+          this.views = [];
+        },
+
+        render: function() {
+          return this;
+        },
+        
+        addOne: function(jobHistory) {
+          var view = new JobHistoryView({model: jobHistory});
+          $('#job-history-list').append(view.render().el);
+
+          this.views.push(view);
+        },
+
+        addAll: function() {
+          JobHistory.each(this.addOne, this);
         }
       });
-      
-      var Jobs = new JobList;
 
       var JobView = Backbone.View.extend({
         tagName: 'tr',
-
-        template:_.template(document.getElementById('job-template').innerHTML),
-
+        template:_.template($('#job-template').html()),
         events: {
           "click .mark-complete": "markComplete",
           "click .view-details": "viewDetails"
@@ -94,7 +131,8 @@
 
         initialize: function() {
           this.listenTo(this.model, 'change', this.render);
-          this.listenTo(this.model, 'destroy', this.remove);
+
+          this.views = []
         },
 
         render: function() {
@@ -103,9 +141,16 @@
         },
 
         markComplete: function() {
-          console.log("marking complete");
           this.model.set({JobState:"COMPLETED"}); 
           this.model.save();
+        },
+
+        viewDetails: function() {
+          var HistoryController = new JobHistoryController({model:this.model});
+
+          this.views.push(HistoryController);
+
+          console.log(this.views[0].views.length);
         }
       });
 
@@ -121,18 +166,17 @@
         },
 
         render: function() {
-
+          return this;
         },
 
         addOne: function(job) {
           var view = new JobView({model: job});
-          document.getElementById('job-list').append(view.render().el);
+          $('#job-list').append(view.render().el);
         },
 
-        // Add all items in the **Todos** collection at once.
         addAll: function() {
           Jobs.each(this.addOne, this);
-        },        
+        }
       });
 
       var App = new AppView;
