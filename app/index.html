@@ -14,27 +14,43 @@
 <body>
   
   <div class="container" id="app">
-      <h1>DR Activation Jobs</h1>
-      <table class="table">
-          <thead class="thead-dark">
-            <tr>
-              <th scope="col">#</th>
-              <th scope="col">Job Name</th>
-              <th scope="col">Date</th>
-              <th scope="col">Status</th>
-            </tr>
-          </thead>
-          <tbody id="job-list">
+    <h1>DR Activation Jobs</h1>
+    <div class="row">
+      <div class="col-5" id="jobs">
+        <table class="table table-sm">
+            <thead class="thead-dark">
+              <tr>
+                <th scope="col">Date</th>
+                <th scope="col">Status</th>
+                <th scope="col">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="job-list">
 
-            </tbody>
-        </table>
+              </tbody>
+          </table>
+        </div>
+        <div class="col-7" id="job-history">
+            <table class="table table-sm">
+                <thead class="thead-dark">
+                  <tr>
+                    <th scope="col">Date</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="job-list">
+    
+                  </tbody>
+              </table>
+        </div>
+    </div>
   </div>
 
   <script type="text/template" id="job-template">
-    <td><%- JobId %></td>
-    <td><%- JobName %></td>
     <td><%- Date %></td>
     <td><%- JobState %></td>
+    <td><a href="#" class="mark-complete">Complete</a> <a href="#" class=view-details">Details</a>
   </script>
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="js/underscore-min.js"></script>
@@ -70,9 +86,25 @@
 
         template:_.template(document.getElementById('job-template').innerHTML),
 
+        events: {
+          "click .mark-complete": "markComplete",
+          "click .view-details": "viewDetails"
+        },
+
+        initialize: function() {
+          this.listenTo(this.model, 'change', this.render);
+          this.listenTo(this.model, 'destroy', this.remove);
+        },
+
         render: function() {
           this.$el.html(this.template(this.model.toJSON()));
           return this;
+        },
+
+        markComplete: function() {
+          console.log("marking complete");
+          this.model.set({JobState:"COMPLETED"}); 
+          this.model.save();
         }
       });
 
