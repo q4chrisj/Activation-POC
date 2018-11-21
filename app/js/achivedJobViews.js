@@ -10,6 +10,7 @@ var JobHistoryView = Backbone.View.extend({
     },
 
     render: function () {
+        console.log(this.model);
         this.$el.html(this.template(this.model.toJSON()));
         return this;
     },

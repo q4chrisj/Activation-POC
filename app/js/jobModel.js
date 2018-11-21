@@ -9,7 +9,24 @@ var Job = Backbone.Model.extend({
             Date: new Date()
         }
     },
-    idAttribute: 'JobId'
+    idAttribute: 'JobId',
+    parse: function(response) {
+        if(response.jobs) {
+            return response.jobs;
+        }
+
+        return response;
+    }
+});
+
+var StartedJob = Backbone.Model.extend({
+    url: function() {
+        return appConfig.apiUrl + '/jobs/STARTED'
+    },
+    idAttribute: 'JobId',
+    parse: function(response) {
+        return response.jobs;
+    }
 });
 
 var JobList = Backbone.Collection.extend({

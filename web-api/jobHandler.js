@@ -9,12 +9,16 @@ module.exports.getJobs = (event, context, callback) => {
     TableName: "DRActivation-Job" 
   };
 
+  console.log(event.pathParameters);
+  
   if(event.pathParameters && event.pathParameters.state) {
     params.ExpressionAttributeValues = {
         ":state": event.pathParameters.state
     };
     params.FilterExpression = "JobState = :state";
   }
+
+  console.log("Requesting started jobs with: " + JSON.stringify(params));
 
   dynamoDb.scan(params, (error, result) => {
     if (error) {
@@ -32,13 +36,20 @@ module.exports.getJobs = (event, context, callback) => {
       return;
     }
 
+    console.log(result.Items.length);
+
+    var returnData = result.Items;
+    if(result.Items.length == 1) {
+      returnData = result.Items[0];
+    }
+
     var response = {
       "statusCode": 200,
       "headers": {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
       },
-      "body": JSON.stringify({jobs:result.Items})
+      "body": JSON.stringify({jobs:returnData})
     }
     
     callback(null, response);
