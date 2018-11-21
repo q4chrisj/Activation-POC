@@ -111,7 +111,7 @@
   <script type="text/template" id="job-template">
     <td><%- Date %></td>
     <td><%- JobState %></td>
-    <td> <a href="#" class="view-details">Details</a>
+    <td> <a href="#archive" class="view-details">Details</a>
       <!-- <a href="#" class="mark-complete">Complete</a> -->
   </script>
   
@@ -146,10 +146,11 @@
           $('#archived-jobs').hide();
 
           var CurrentJobController = new CurrentJobViewController;
-          //var ArchivedJobController = new ArchivedJobViewController;
         },
 
         archivedJobs: function() {
+          window.clearInterval();
+
           $('#current-jobs').hide();
           $('#archived-jobs').show();
 
