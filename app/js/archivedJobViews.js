@@ -1,7 +1,7 @@
 var Jobs = new JobList;
 var JobHistory = new JobHistoryList;
 
-var JobHistoryView = Backbone.View.extend({
+var ArchivedJobHistoryView = Backbone.View.extend({
     tagName: 'tr',
     template: _.template($('#job-history-template').html()),
 
@@ -20,7 +20,7 @@ var JobHistoryView = Backbone.View.extend({
     }
 });
 
-var JobHistoryController = Backbone.View.extend({
+var ArchivedJobHistoryViewController = Backbone.View.extend({
     el: $('#job-history-list'),
 
     initialize: function () {
@@ -33,7 +33,7 @@ var JobHistoryController = Backbone.View.extend({
         this.$el.empty();
 
         JobHistory.each(function (jobHistory) {
-            var view = new JobHistoryView({ model: jobHistory });
+            var view = new ArchivedJobHistoryView({ model: jobHistory });
             $('#job-history-list').append(view.render().el);
         });
 
@@ -41,7 +41,7 @@ var JobHistoryController = Backbone.View.extend({
     }
 });
 
-var JobView = Backbone.View.extend({
+var ArchivedJobView = Backbone.View.extend({
     tagName: 'tr',
     template: _.template($('#job-template').html()),
     events: {
@@ -64,11 +64,11 @@ var JobView = Backbone.View.extend({
     },
 
     viewDetails: function () {
-        var HistoryController = new JobHistoryController({ model: this.model });
+        var HistoryController = new ArchivedJobHistoryViewController({ model: this.model });
     }
 });
 
-var JobController = Backbone.View.extend({
+var ArchivedJobViewController = Backbone.View.extend({
     el: $('#app'),
 
     initialize: function () {
@@ -84,7 +84,7 @@ var JobController = Backbone.View.extend({
     },
 
     addOne: function (job) {
-        var view = new JobView({ model: job });
+        var view = new ArchivedJobView({ model: job });
         $('#job-list').append(view.render().el);
     },
 

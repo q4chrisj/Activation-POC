@@ -94,5 +94,5 @@ $JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Enable Live Mode" -C
 
 Start-Sleep 60
 
-#Write-Host "`nDR activation complete."
-#$CompletedJob = CompleteActiveJob -CurrentJob $Job
+Write-Host "`nDR activation complete."
+$CompletedJob = CompleteActiveJob -CurrentJob $Job

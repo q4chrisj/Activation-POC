@@ -28,7 +28,7 @@
                 The DR environment isn't being activated at the moment.
               </div>            
           </div>
-          <div id="current-job-history" class="hide">
+          <div id="current-job-history">
               <table class="table table-sm">
                   <thead class="thead-dark">
                     <tr>
@@ -107,81 +107,16 @@
   <script src="js/config.js"></script>
   <script src="js/jobModel.js"></script>
   <script src="js/jobHistoryModel.js"></script>
-  <script src="js/achivedJobViews.js"></script>
+  <script src="js/archivedJobViews.js"></script>
+  <script src="js/currentJobViews.js"></script>
 
   <script>
     window.onload = function() {
-      var CurrentJob = new StartedJob;
-      var CurrentJobHistory = new JobHistoryList
+      $('#current-job-history').hide();
 
-      var CurrentJobHistoryView = Backbone.View.extend({
-        tagName: 'tr',
-        template: _.template($('#job-history-template').html()),
+      var CurrentJobController = new CurrentJobViewController;
 
-        initialize: function() {
-          this.listenTo(this.model, 'change', this.render);
-        },
-
-        render: function() {
-          this.$el.html(this.template(this.model.toJSON()));
-          return this;
-        }
-      });
-
-      var CurrentJobHistoryController = Backbone.View.extend({
-        el: $('#currentjob-history-list'),
-
-        initialize: function() {
-          this.listenTo(CurrentJobHistory, 'sync', this.render);
-          
-          CurrentJobHistory.fetch({ url: appConfig.apiUrl + "/jobHistory/" + this.model.id, reset: true });
-        },
-
-        render: function() {
-          this.$el.empty();
-
-          CurrentJobHistory.each(function(jobHistory) {
-            var view = new CurrentJobHistoryView({model:jobHistory});
-            $('#currentjob-history-list').append(view.render().el)
-          });
-        }
-      });
-
-      var CurrentJobController = Backbone.View.extend({
-        el: $('#current-job-info'),
-        template: _.template($('#job-started-template').html()),
-
-        initialize: function() {
-          this.listenTo(CurrentJob, 'change', this.render);
-          this.listenTo(CurrentJob, 'change', this.showHistory);
-          
-          CurrentJob.fetch();
-
-          var view = this;
-          window.setInterval(function() {
-            console.log("refreshing current job status")
-            CurrentJob.fetch();
-            view.render();
-            view.showHistory();
-          }, 30000)
-        },
-
-        render: function() {
-          console.log('rendering current job status')
-          this.$el.html(this.template(CurrentJob.toJSON()))
-
-
-          return true;
-        },
-
-        showHistory: function() {
-          var HistoryController = new CurrentJobHistoryController({model:CurrentJob});
-        }
-      });
-
-      var CurrentJobController = new CurrentJobController
-
-      var ArchivedJobController = new JobController;
+      var ArchivedJobController = new ArchivedJobViewController;
     };
   </script>
 
