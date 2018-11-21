@@ -1,3 +1,5 @@
+App = App || {};
+
 var Job = Backbone.Model.extend({
     url: function() {
         return appConfig.apiUrl + '/jobs/'
@@ -21,7 +23,7 @@ var Job = Backbone.Model.extend({
 
 var StartedJob = Backbone.Model.extend({
     url: function() {
-        return appConfig.apiUrl + '/jobs/STARTED'
+        return App.Config.ApiUrl + '/jobs/STARTED'
     },
     idAttribute: 'JobId',
     parse: function(response) {
@@ -31,7 +33,7 @@ var StartedJob = Backbone.Model.extend({
 
 var JobList = Backbone.Collection.extend({
     url: function() {
-        return appConfig.apiUrl + '/jobs/'
+        return App.Config.ApiUrl + '/jobs/'
     },
     model: Job,
     parse: function(response) {

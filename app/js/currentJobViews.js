@@ -22,7 +22,7 @@ var CurrentJobHistoryViewController = Backbone.View.extend({
     initialize: function () {
         this.listenTo(CurrentJobHistory, 'sync', this.render);
 
-        CurrentJobHistory.fetch({ url: appConfig.apiUrl + "/jobHistory/" + this.model.id, reset: true });
+        CurrentJobHistory.fetch({ url: App.Config.ApiUrl + "/jobHistory/" + this.model.id});
     },
 
     render: function () {
@@ -30,13 +30,13 @@ var CurrentJobHistoryViewController = Backbone.View.extend({
 
         CurrentJobHistory.each(function (jobHistory) {
             var view = new CurrentJobHistoryView({ model: jobHistory });
-            $('#currentjob-history-list').append(view.render().el)
+            $('#currentjob-history-list').append(view.render().el);
         });
     }
 });
 
 var CurrentJobViewController = Backbone.View.extend({
-    el: $('#current-job-info'),
+    el: $('#current-job-status'),
     template: _.template($('#job-started-template').html()),
 
     initialize: function () {
@@ -47,13 +47,17 @@ var CurrentJobViewController = Backbone.View.extend({
 
         var view = this;
         window.setInterval(function () {
+            CurrentJob.clear({silent:true});
             CurrentJob.fetch({
                 success: function (data) {
                     if (data.get('JobId') !== undefined) {
                         view.render();
                         view.showHistory();
                     } else {
+                        CurrentJob.clear();
+                        $('#current-job-status').hide();
                         $('#current-job-history').hide();
+                        $('#current-job-info').show();
                     }
                 },
                 error: function () {
@@ -64,6 +68,9 @@ var CurrentJobViewController = Backbone.View.extend({
     },
 
     render: function () {
+        $('#current-job-info').hide();
+        this.$el.show();
+
         this.$el.html(this.template(CurrentJob.toJSON()))
 
         return true;

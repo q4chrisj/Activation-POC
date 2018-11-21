@@ -7,7 +7,7 @@ var JobHistory = Backbone.Model.extend({
 
 var JobHistoryList = Backbone.Collection.extend({
     urlRoot: function() {
-        return appConfig.apiUrl + '/jobHistory/'
+        return App.Config.ApiUrl + '/jobHistory/'
     },
     model: JobHistory,
     parse: function(response) {
