@@ -11,7 +11,7 @@ var JobHistoryList = Backbone.Collection.extend({
     },
     model: JobHistory,
     parse: function(response) {
-        return response.jobs;
+        return response.jobHistory;
     },
     comparator: function(jobHistory) {
         return new Date(jobHistory.get('Date'));

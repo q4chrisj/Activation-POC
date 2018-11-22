@@ -38,7 +38,7 @@ module.exports.jobHistory = (event, context, callback) => {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Credentials': true,
       },
-      "body": JSON.stringify({jobs:result.Items})
+      "body": JSON.stringify({jobHistory:result.Items})
     }
     
     callback(null, response);

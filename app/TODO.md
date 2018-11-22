@@ -5,6 +5,8 @@
 * [x] Auto reload various lists etc.
 * [ ] Collection sorting, by date, correctly.
 * [ ] Outputting dates correctly (with milliseconds?)
-* [ ] Implement Backbone router to split current and archived into seperate pages.
+* [x] Implement Backbone router to split current and archived into seperate pages.
 * [ ] Serve the dashboard out of S3 + cloudfront (with a nice domain).
 * [ ] JobHistory api gateway should return jobHistory:result.Items, not jobs:result.Items.
+* [x] Docker for local development
+  * `docker run -d -p 80:80 -v ~/Projects/Activation-POC/app:/usr/local/apache2/htdocs --name dashboard-app dashboard-app`
