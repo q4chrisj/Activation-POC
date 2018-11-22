@@ -1,22 +1,19 @@
 var App = App || {};
 
-$(function() {
-
-    var ViewController = {
-        showView: function(rootEl, view) {
-            if(this.currentView) {
-                this.currentView.close();
-              }
-        
-              this.currentView = view;
-              if(this.currentView.render) {
-                this.currentView.render();
-              }
-              
-              rootEl.empty();
-              rootEl.append(view.el);
-        }
+var ViewController = {
+    showView: function(rootEl, view) {
+        if(this.currentView) {
+            this.currentView.close();
+            }
+    
+            this.currentView = view;
+            if(this.currentView.render) {
+            this.currentView.render();
+            }
+            
+            rootEl.empty();
+            rootEl.append(view.el);
     }
+}
 
-    App.ViewController = ViewController;
-});
+App.ViewController = ViewController;

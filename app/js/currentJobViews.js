@@ -1,3 +1,4 @@
+App = App || {};
 
 var CurrentJob = new StartedJob;
 var CurrentJobHistory = new JobHistoryList
