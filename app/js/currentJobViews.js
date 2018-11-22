@@ -24,6 +24,7 @@ var CurrentJobHistoryViewController = Backbone.View.extend({
         this.listenTo(CurrentJobHistory, 'sync', this.render);
 
         CurrentJobHistory.fetch({ url: App.Config.ApiUrl + "/jobHistory/" + this.model.id});
+        $('#current-job-history').show();
     },
 
     render: function () {
@@ -79,6 +80,5 @@ var CurrentJobViewController = Backbone.View.extend({
 
     showHistory: function () {
         var HistoryController = new CurrentJobHistoryViewController({ model: CurrentJob });
-        $('#current-job-history').show();
     }
 });

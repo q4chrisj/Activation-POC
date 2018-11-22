@@ -134,6 +134,34 @@
   <script>
     window.onload = function() {
       $('#current-job-history').hide();
+  
+      Backbone.View.prototype.close = function(){
+        console.log('closing view');
+        this.remove();
+        if (this.onClose){
+          this.onClose();
+        }
+      }
+  
+      var TransitionController = {
+        handleChange: function(currentRoute) {
+          switch (currentRoute) {
+            case "currentJobs":
+              $('#current-jobs').show();
+              $('#archived-jobs').hide(); 
+
+              break;
+            case "archivedJobs":
+              window.clearInterval();
+
+              $('#current-jobs').hide();
+              $('#archived-jobs').show();
+              
+              break;
+          }
+        }
+      };
+
 
       var AppRouter = Backbone.Router.extend({
         routes: {
@@ -142,21 +170,18 @@
         },
 
         currentJobs: function() {
-          $('#current-jobs').show();
-          $('#archived-jobs').hide();
+          TransitionController.handleChange('currentJobs');
 
           var CurrentJobController = new CurrentJobViewController;
+          //App.ViewController.showView($('#current-job'), new CurrentJobViewController);
         },
 
         archivedJobs: function() {
-          window.clearInterval();
-
-          $('#current-jobs').hide();
-          $('#archived-jobs').show();
+          TransitionController.handleChange('archivedJobs');
 
           var ArchivedJobController = new ArchivedJobViewController; 
+          //App.ViewController.showView($('#job-listted'), new ArchivedJobViewController);
         }
-
       });
       
       var router = new AppRouter;
