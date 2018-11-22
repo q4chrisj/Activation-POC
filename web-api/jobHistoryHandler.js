@@ -63,7 +63,7 @@ module.exports.createJobHistory = (event, context, callback) => {
       JobId: data.JobId,
       Completed: data.Completed,
       StepName: data.StepName,
-      Date: timestamp
+      Date: new Date().toLocaleString()
     }
   };
 

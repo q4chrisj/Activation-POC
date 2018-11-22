@@ -72,7 +72,7 @@ module.exports.createJob = (event, context, callback) => {
       JobId: uuid.v1(),
       JobName: "DR Activation",
       JobState: data.JobState,
-      Date: timestamp
+      Date: new Date().toLocaleString()
     }
   };
 
@@ -122,7 +122,7 @@ module.exports.completeJob = (event, context, callback) => {
       JobId: data.JobId,
       JobName: data.JobName,
       JobState: "COMPLETED",
-      Date: data.Date
+      Date: new Date(data.Date).toLocaleString()
     }
   };
 

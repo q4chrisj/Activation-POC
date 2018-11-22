@@ -1,44 +1,46 @@
+# Include ApiFunctions.ps1 to communicate with API Gateway
 . .\ApiFunctions.ps1
+
+function New-JobHistory {
+    param(
+        [string] $JobId,
+        [string] $StepName,
+        [string] $Completed
+    )
+
+    if($Completed -eq "False") {
+        Write-Host "Starting $StepName" 
+    }
+
+    CreateJobHistory -JobId $JobId -StepName $StepName -Completed $Completed | Out-Null
+}
+
+$Steps = 
+    "Reset Activation Parameters",
+    "Start Instances - Batch 1",
+    "Download Databases",
+    "Start Instances - Batch 2",
+    "Restore Master Database",
+    "Restore Global Databases",
+    "Create Active Directory Users",
+    "Restore Client Databases - Batch 1",
+    "Restore Client Databases - Batch 2",
+    "Restore Client Databases - Batch 3",
+    "Start Instances - Batch 3",
+    "Enable Live Mode"
 
 Write-Host "Starting DR Activation Job"
 $Job = CreateActivationJob
 
-Write-Host "Starting Primary Instance Activation"
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Primary Instance Activation" -Completed "False"
+foreach($Step in $Steps) {
+    New-JobHistory -JobId $Job.JobId -StepName $Step -Completed "False"
 
-Start-Sleep 60
+    Start-Sleep 60
+    
+    New-JobHistory -JobId $Job.JobId -StepName $Step -Completed "True"
 
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Primary Instance Activation" -Completed "True"
-
-Write-Host "Starting Database Restore"
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Database Restore" -Completed "False"
-
-Start-Sleep 60
-
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Database Restore" -Completed "True"
-
-Write-Host "Starting client files restore"
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Clientfiles Restore" -Completed "False"
-
-Start-Sleep 60
-
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Clientfiles Restore" -Completed "True"
-
-Write-Host "Starting Secondary Instance Activation"
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Secondary Instance Activation" -Completed "False"
-
-Start-Sleep 60
-
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Secondary Instance Activation" -Completed "True"
-
-Write-Host "Starting Enable Live Mode"
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Enable Live Mode" -Completed "False"
-
-Start-Sleep 60
-
-$JobHistory = CreateJobHistory -JobId $Job.JobId -StepName "Enable Live Mode" -Completed "True"
-
-Start-Sleep 60
+    Start-sleep 10
+}
 
 Write-Host "`nDR activation complete."
 $CompletedJob = CompleteActiveJob -CurrentJob $Job

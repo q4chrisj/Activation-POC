@@ -1,6 +1,6 @@
 App = App || {};
 
-var Job = Backbone.Model.extend({
+var Job = BaseModel.extend({
     url: function() {
         return appConfig.apiUrl + '/jobs/'
     },
@@ -21,7 +21,7 @@ var Job = Backbone.Model.extend({
     }
 });
 
-var StartedJob = Backbone.Model.extend({
+var StartedJob = BaseModel.extend({
     url: function() {
         return App.Config.ApiUrl + '/jobs/STARTED'
     },

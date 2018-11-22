@@ -1,6 +1,6 @@
 App = App || {};
 
-var JobHistory = Backbone.Model.extend({
+var JobHistory = BaseModel.extend({
     defaults: {
         JobId: ''
     },
