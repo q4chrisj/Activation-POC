@@ -46,13 +46,6 @@ module.exports.jobHistory = (event, context, callback) => {
 };
 
 module.exports.createJobHistory = (event, context, callback) => {
-  const timestamp = new Date().toLocaleString(undefined, {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
   
   const data = JSON.parse(event.body);
 

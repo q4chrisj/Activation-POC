@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
 
-  <title>DR Activation Viewer</title>
+  <title>Ops Dashboard</title>
   <meta name="description" content="The HTML5 Herald">
   <meta name="author" content="SitePoint">
 
@@ -15,23 +15,32 @@
   <header class="navbar navbar-dark bg-dark shadow-sm">
     <div class="container">
       <nav class="navbar navbar-expand-lg">
-          <a href="#" class="navbar-brand" href="#">DR Activation Dashboard</a>
+          <a href="#" class="navbar-brand" href="#">Ops Dashboard</a>
           <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
           </button>
           <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
-              <li class="nav-item">
-                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="#archive">Archive</a>
-              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Disaster Recovery
+                </a>
+                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                  <a class="dropdown-item" href="#current">Current Activations</a>
+                  <a class="dropdown-item" href="#">DNS Change</a>
+                  <a class="dropdown-item" href="#archive">Archive</a>
+                </div>
+              </li>              
             </ul>
           </div>
         </nav>      
     </div>
   </header>
+
+  <div class="container" id="home"> 
+
+  </div>
+
   <div class="container" id="current-jobs">
     <div class="row">
       <div class="col">
@@ -48,7 +57,7 @@
           <div id="current-job-status">
 
           </div>
-          <div id="current-job-history">
+          <div id="current-job-history" style="display:none;">
               <table class="table table-sm">
                   <thead class="thead-dark">
                     <tr>
@@ -122,13 +131,15 @@
   </script>
 
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
   <script src="js/underscore-min.js"></script>
   <script src="js/backbone-min.js"></script>
   <script src="js/moment.min.js"></script>
   <script src="js/moment-timezone-with-data.min.js"></script>
   <script src="js/config.js"></script>
-  <script src="js/viewController.js"></script>
+  <script src="js/controllers.js"></script>
   <script src="js/baseModel.js"></script>
+  <script src="js/baseView.js"></script>
   <script src="js/jobModel.js"></script>
   <script src="js/jobHistoryModel.js"></script>
   <script src="js/archivedJobViews.js"></script>
@@ -136,54 +147,41 @@
 
   <script>
     window.onload = function() {
-      $('#current-job-history').hide();
-  
-      Backbone.View.prototype.close = function(){
-        console.log('closing view');
-        this.remove();
-        if (this.onClose){
-          this.onClose();
+
+      var HomeView = Backbone.View.extend({
+        el: $('#home'),
+        render: function() {
+          return this;
         }
-      }
-  
-      var TransitionController = {
-        handleChange: function(currentRoute) {
-          switch (currentRoute) {
-            case "currentJobs":
-              $('#current-jobs').show();
-              $('#archived-jobs').hide(); 
-
-              break;
-            case "archivedJobs":
-              window.clearInterval();
-
-              $('#current-jobs').hide();
-              $('#archived-jobs').show();
-              
-              break;
-          }
-        }
-      };
-
+      });
 
       var AppRouter = Backbone.Router.extend({
         routes: {
-          "": "currentJobs",
+          "": "home",
+          "current": "currentJobs",
           "archive": "archivedJobs"
+        },
+
+        home: function() {
+          TransitionController.handleChange('home');
+
+          var Home = new HomeView;
+          App.ViewController.showView(Home);
         },
 
         currentJobs: function() {
           TransitionController.handleChange('currentJobs');
 
           var CurrentJobController = new CurrentJobViewController;
-          //App.ViewController.showView($('#current-job'), new CurrentJobViewController);
+          App.ViewController.showView(CurrentJobController);
         },
 
         archivedJobs: function() {
           TransitionController.handleChange('archivedJobs');
 
           var ArchivedJobController = new ArchivedJobViewController; 
-          //App.ViewController.showView($('#job-listted'), new ArchivedJobViewController);
+          ArchivedJobController.render();
+          App.ViewController.showView(ArchivedJobController);
         }
       });
       

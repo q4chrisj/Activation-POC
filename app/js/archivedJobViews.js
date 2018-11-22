@@ -72,7 +72,7 @@ App = App || {};
     });
     
     var ArchivedJobViewController = Backbone.View.extend({
-        el: $('#archived-jobs'),
+        el: $('#job-history-list'),
     
         initialize: function () {
             this.listenTo(Jobs, 'add', this.addOne);

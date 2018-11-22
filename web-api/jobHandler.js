@@ -57,13 +57,6 @@ module.exports.getJobs = (event, context, callback) => {
 };
 
 module.exports.createJob = (event, context, callback) => {
-  const timestamp = new Date().toLocaleString(undefined, {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
   const data = JSON.parse(event.body);
   const params = {
@@ -106,13 +99,6 @@ module.exports.createJob = (event, context, callback) => {
 };
 
 module.exports.completeJob = (event, context, callback) => {
-  const timestamp = new Date().toLocaleString(undefined, {
-    day: 'numeric',
-    month: 'numeric',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
 
   const data = JSON.parse(event.body);
   

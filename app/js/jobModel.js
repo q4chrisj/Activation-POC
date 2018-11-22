@@ -7,8 +7,7 @@ var Job = BaseModel.extend({
     defaults: function() {
         return {
             JobName: "DR Activation",
-            JobState: "STARTED",
-            Date: new Date()
+            JobState: "STARTED"
         }
     },
     idAttribute: 'JobId',
@@ -39,5 +38,7 @@ var JobList = Backbone.Collection.extend({
     parse: function(response) {
         return response.jobs;
     },
-    comparator: 'Date'
+    comparator: function(job) {
+        return new Date(job.get('Date'));
+    }
 });

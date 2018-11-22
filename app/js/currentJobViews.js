@@ -1,8 +1,5 @@
 App = App || {};
 
-var CurrentJob = new StartedJob;
-var CurrentJobHistory = new JobHistoryList
-
 var CurrentJobHistoryView = Backbone.View.extend({
     tagName: 'tr',
     template: _.template($('#job-history-template').html()),
@@ -21,16 +18,18 @@ var CurrentJobHistoryViewController = Backbone.View.extend({
     el: $('#currentjob-history-list'),
 
     initialize: function () {
-        this.listenTo(CurrentJobHistory, 'sync', this.render);
+        this.collection = new JobHistoryList;
+        this.listenTo(this.collection, 'sync', this.render);
 
-        CurrentJobHistory.fetch({ url: App.Config.ApiUrl + "/jobHistory/" + this.model.id});
+        this.collection.fetch({ url: App.Config.ApiUrl + "/jobHistory/" + this.model.id});
+
         $('#current-job-history').show();
     },
 
     render: function () {
         this.$el.empty();
 
-        CurrentJobHistory.each(function (jobHistory) {
+        this.collection.each(function (jobHistory) {
             var view = new CurrentJobHistoryView({ model: jobHistory });
             $('#currentjob-history-list').append(view.render().el);
         });
@@ -42,21 +41,24 @@ var CurrentJobViewController = Backbone.View.extend({
     template: _.template($('#job-started-template').html()),
 
     initialize: function () {
-        this.listenTo(CurrentJob, 'change', this.render);
-        this.listenTo(CurrentJob, 'change', this.showHistory);
+        this.model = new StartedJob;
 
-        CurrentJob.fetch();
+        this.listenTo(this.model, 'change', this.render);
+        this.listenTo(this.model, 'change', this.showHistory);
+
+        this.model.fetch();
 
         var view = this;
         window.setInterval(function () {
-            CurrentJob.clear({silent:true});
-            CurrentJob.fetch({
+            view.model = new StartedJob;
+            view.model.clear({silent:true});
+            view.model.fetch({
                 success: function (data) {
                     if (data.get('JobId') !== undefined) {
                         view.render();
                         view.showHistory();
                     } else {
-                        CurrentJob.clear();
+                        this.model.clear();
                         $('#current-job-status').hide();
                         $('#current-job-history').hide();
                         $('#current-job-info').show();
@@ -73,12 +75,12 @@ var CurrentJobViewController = Backbone.View.extend({
         $('#current-job-info').hide();
         this.$el.show();
 
-        this.$el.html(this.template(CurrentJob.toJSON()))
+        this.$el.html(this.template(this.model.toJSON()))
 
         return true;
     },
 
     showHistory: function () {
-        var HistoryController = new CurrentJobHistoryViewController({ model: CurrentJob });
+        var HistoryController = new CurrentJobHistoryViewController({ model: this.model });
     }
 });
