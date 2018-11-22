@@ -10,3 +10,4 @@
 * [ ] JobHistory api gateway should return jobHistory:result.Items, not jobs:result.Items.
 * [x] Docker for local development
   * `docker run -d -p 80:80 -v ~/Projects/Activation-POC/app:/usr/local/apache2/htdocs --name dashboard-app dashboard-app`
+* [ ] "Cannot read property 'ApiUrl' of undefined" in jobModel.StartedJob
