@@ -10,14 +10,7 @@ var Job = BaseModel.extend({
             JobState: "STARTED"
         }
     },
-    idAttribute: 'JobId',
-    parse: function(response) {
-        if(response.jobs) {
-            return response.jobs;
-        }
-
-        return response;
-    }
+    idAttribute: 'JobId'
 });
 
 var StartedJob = BaseModel.extend({

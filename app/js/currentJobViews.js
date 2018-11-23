@@ -46,19 +46,27 @@ var CurrentJobViewController = Backbone.View.extend({
         this.listenTo(this.model, 'change', this.render);
         this.listenTo(this.model, 'change', this.showHistory);
 
-        this.model.fetch();
-
         var view = this;
+
+        this.model.fetch({
+            success: function(data) {
+                if(data.get('JobId') !== undefined) {
+                    view.model.setDate();
+                }
+            }
+        });
+
         window.setInterval(function () {
             view.model = new StartedJob;
             view.model.clear({silent:true});
             view.model.fetch({
                 success: function (data) {
+                    view.model.setDate();
                     if (data.get('JobId') !== undefined) {
                         view.render();
                         view.showHistory();
                     } else {
-                        this.model.clear();
+                        view.model.clear();
                         $('#current-job-status').hide();
                         $('#current-job-history').hide();
                         $('#current-job-info').show();

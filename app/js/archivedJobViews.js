@@ -78,7 +78,7 @@ App = App || {};
             this.listenTo(Jobs, 'add', this.addOne);
             this.listenTo(Jobs, 'reset', this.addAll);
             this.listenTo(Jobs, 'all', this.render);
-    
+            
             Jobs.fetch();
         },
     
