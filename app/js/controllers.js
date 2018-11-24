@@ -14,18 +14,31 @@ var TransitionController = {
         window.clearInterval();
         switch (currentRoute) {
             case "home":
+                $('#home').show();
                 $('#current-jobs').hide();
                 $('#archived-jobs').hide();
+                $('domain-manager').hide();
 
                 break;
             case "currentJobs":
                 $('#current-jobs').show();
+                $('#home').hide()
                 $('#archived-jobs').hide();
+                $('#domain-manager').hide();
 
                 break;
             case "archivedJobs":
-                $('#current-jobs').hide();
                 $('#archived-jobs').show();
+                $('#home').hide()
+                $('#current-jobs').hide();
+                $('#domain-manager').hide();
+
+                break;
+            case "domainInfo":
+                $('#domain-manager').show();
+                $('#home').hide()
+                $('#current-jobs').hide();
+                $('#archived-jobs').hide();
 
                 break;
         }
