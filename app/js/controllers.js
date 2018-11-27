@@ -17,7 +17,7 @@ var TransitionController = {
                 $('#home').show();
                 $('#current-jobs').hide();
                 $('#archived-jobs').hide();
-                $('domain-manager').hide();
+                $('#domain-manager').hide();
 
                 break;
             case "currentJobs":

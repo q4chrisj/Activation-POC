@@ -15,6 +15,10 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
       Resource: "arn:aws:dynamodb:us-west-1:481636229104:table/DRActivation-*"
+    - Effect: Allow
+      Action:
+        - route53:ListResourceRecordSets
+      Resource: "arn:aws:route53:::hostedzone/*"
 
 functions:
   jobs:
@@ -56,7 +60,7 @@ functions:
           path: jobHistory
           method: post
           cors: true
-  domaininfo:
+  domainInfo:
     handler: domainInfoHandler.getDomainInfo
     events:
       - http:
