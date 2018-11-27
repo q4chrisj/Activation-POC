@@ -1,6 +1,7 @@
 'use strict';
 // listResourceRecordSets
 // changeResourceRecordSets
+// https://irvinlim.com/blog/async-await-on-aws-lambda/ <- LIFE SAVER
 
 const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
@@ -83,8 +84,6 @@ module.exports.getDomainInfo = async (event, context, callback) => {
         currentTarget = record.ResourceRecords[0].Value;
       }
       
-      console.log("Current Target: " + currentTarget);
-
       var newResult = {
         DomainId: item.DomainId,
         DisasterRecoverySetting: item.DisasterRecoverySetting,
@@ -103,8 +102,6 @@ module.exports.getDomainInfo = async (event, context, callback) => {
       break;
     }
   });
-
-  console.log(JSON.stringify(newResults));
 
   var response = {
     "statusCode": 200,

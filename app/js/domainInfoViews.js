@@ -1,3 +1,19 @@
+var DomainToggleStatusView = Backbone.View.extend({
+    el: $('#domain-info-toggle-status'),
+    tagName: 'div',
+    className: 'alert alert-info',
+    template: _.template($('#domain-info-status-template').html()),
+
+    initialize: function() {
+        console.log(this.model);
+        this.render();
+    },
+
+    render: function() {
+        this.$el.html(this.template(this.model.toJSON()));
+        return this;
+    }
+});
 var DomainToggleView = Backbone.View.extend({
     el: $('#domain-info-toggle'),
     template: _.template($('#domain-info-toggle-template').html()),
@@ -16,7 +32,9 @@ var DomainToggleView = Backbone.View.extend({
     },
 
     toggleDomains: function() {
-        console.log('Toggle domains');
+        this.collection.each(function(item) {
+            toggleStatusView = new DomainToggleStatusView({model: item});
+        });
     }
 });
 
@@ -48,9 +66,12 @@ var DomainInfoViewController = Backbone.View.extend({
         this.listenTo(this.collection, 'reset', this.addAll);
         this.listenTo(this.collection, 'all', this.render);
 
-        this.collection.fetch();
-
-        var toggleView = new DomainToggleView;
+        var view = this;
+        this.collection.fetch({
+            success: function () {
+                new DomainToggleView({collection:view.collection});
+            }
+        });
     },
 
     render: function() {
@@ -58,7 +79,6 @@ var DomainInfoViewController = Backbone.View.extend({
     },
         
     addOne: function (domainInfo) {
-        console.log(domainInfo);
         var view = new DomainInfoView({ model: domainInfo });
         this.$el.append(view.render().el);
     },
