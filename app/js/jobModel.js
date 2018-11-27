@@ -2,7 +2,7 @@ App = App || {};
 
 var Job = BaseModel.extend({
     url: function() {
-        return appConfig.apiUrl + '/jobs/'
+        return App.Config.ApiUrl + '/jobs/'
     },
     defaults: function() {
         return {

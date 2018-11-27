@@ -7,33 +7,6 @@ const AWS = require('aws-sdk');
 const dynamoDb = new AWS.DynamoDB.DocumentClient();
 const route53 = new AWS.Route53();
 
-var Route53Helpers = {
-  getRecordSet: async function(hostedZoneId, domainName) {
-    var params = {
-      HostedZoneId: hostedZoneId
-    };
-
-    var record;
-    console.log("Record: " + record);
-    await route53.listResourceRecordSets(params, function(error, result) {
-      if(error) {
-        console.log(error);
-      } else {
-        for (var i = 0; i < result.ResourceRecordSets.length; i++) {
-          var item = result.ResourceRecordSets[i];
-          var itemName = item.Name.replace("\\052","*").slice(0, -1);
-          console.log("Item in helper: " + item);
-          if(itemName == domainName) {
-            record = item;
-            console.log("Record 1: " + record);
-            return record;
-          }
-        }
-      }
-    });
-    console.log("Record 2: " + record)
-  }
-}
 module.exports.getDomainInfo = async (event, context, callback) => {
   var params = {
     TableName: "DRActivation-DomainInfo" 
@@ -110,6 +83,30 @@ module.exports.getDomainInfo = async (event, context, callback) => {
       'Access-Control-Allow-Credentials': true,
     },
     "body": JSON.stringify({domainInfo:newResults})
+  }
+  
+  callback(null, response);
+};
+
+module.exports.toggleDomain = async (event, context, callback) => {
+  console.log(JSON.parse(event.body).HostedZoneId);
+  const body = JSON.parse(event.body);
+  const params = {
+    HostedZoneId: body.HostedZoneId
+  };
+
+  var route53Result = await route53.listResourceRecordSets(params).promise();
+
+  console.log(route53Result.ResourceRecordSets);
+
+
+  var response = {
+    "statusCode": 200,
+    "headers": {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
+    "body": JSON.stringify({message:"Great Job!" + body.Domain})
   }
   
   callback(null, response);

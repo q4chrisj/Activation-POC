@@ -67,3 +67,10 @@ functions:
           path: domainInfo
           method: get
           cors: true
+  toggleDomain: 
+    handler: domainInfoHandler.toggleDomain
+    events: 
+      - http:
+          path: toggleDomain
+          method: post
+          cors: true
