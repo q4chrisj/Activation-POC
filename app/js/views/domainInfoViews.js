@@ -67,8 +67,6 @@ var DomainToggleView = Backbone.View.extend({
                 }
             }, {wait:true});
         });
-
-        //this.collection.fetch({clear:true});
     }
 });
 
@@ -113,17 +111,6 @@ var DomainInfoViewController = Backbone.View.extend({
                 new DomainToggleView({ collection: view.collection });
             }
         });
-
-        // window.setInterval(function() {
-        //     _.each(view.childViews, function(childView) {
-        //         childView.close();
-        //     });
-        //     view.collection.fetch({
-        //         success: function() {
-        //             new DomainToggleView({ collection: view.collection });
-        //         }
-        //     });
-        // }, 10000);
     },
 
     render: function() {
