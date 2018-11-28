@@ -1,17 +1,36 @@
+var DomainToggleStatusErrorView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'alert alert-danger',
+
+    render: function() {
+        this.$el.html(this.model.toJSON().message);
+        return this;
+    }
+});
+
 var DomainToggleStatusView = Backbone.View.extend({
-    el: $('#domain-info-toggle-status'),
     tagName: 'div',
     className: 'alert alert-info',
     template: _.template($('#domain-info-status-template').html()),
 
     initialize: function() {
-        //this.listenTo(this.model, 'all', this.render);
     },
 
     render: function() {
         console.log('Toggling: ' + this.model.toJSON().Domain);
         this.$el.html(this.template(this.model.toJSON()));
         return this;
+    },
+
+    close: function() {
+        console.log("closing DomainToggleStatusView", this);
+
+        this.unbind(); // unbind all internal event bindings
+        this.remove();
+        
+        delete this.model;
+		delete this.$el; // delete any jQuery wrapped objects
+		delete this.el; // delete the variable reference to this node
     }
 });
 
@@ -35,19 +54,25 @@ var DomainToggleView = Backbone.View.extend({
     toggleDomains: function() {
         this.collection.each(function(item) {
             var toggleStatusView = new DomainToggleStatusView({model: item});
-            toggleStatusView.render();
+            $("#domain-info-toggle-status").html(toggleStatusView.render().el);
 
             item.save({ToggleDomains:true}, {
                 success: function(model, response) {
-                    console.log(response);
-                    toggleStatusView.$el.empty();
+                    //console.log(response);
+                    toggleStatusView.close();
                 },
                 error: function(model, response) {
+                    var errorModel = new ErrorModel();
                     console.log(response);
-                    toggleStatusView.$el.empty();
+                    errorModel.set({message:'There was an error: ' + response.body})
+                
+                    var errorView = new DomainToggleStatusErrorView({model: errorModel})
+                    $("#domain-info-toggle-status").html(errorView.render().el);
                 }
             }, {wait:true});
         });
+
+        //this.collection.fetch({reset:true});
     }
 });
 
@@ -77,13 +102,13 @@ var DomainInfoViewController = Backbone.View.extend({
 
         this.listenTo(this.collection, 'add', this.addOne);
         this.listenTo(this.collection, 'reset', this.addAll);
-        this.listenTo(this.collection, 'all', this.render);
+        //this.listenTo(this.collection, 'all', this.render);
 
         var view = this;
         this.collection.fetch({
             success: function () {
                 new DomainToggleView({collection:view.collection});
-            }
+            }, reset:true
         });
     },
 

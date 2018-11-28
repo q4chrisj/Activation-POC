@@ -89,25 +89,99 @@ module.exports.getDomainInfo = async (event, context, callback) => {
 };
 
 module.exports.toggleDomain = async (event, context, callback) => {
-  console.log(JSON.parse(event.body).HostedZoneId);
   const body = JSON.parse(event.body);
   const params = {
     HostedZoneId: body.HostedZoneId
   };
 
-  var route53Result = await route53.listResourceRecordSets(params).promise();
-
-  console.log(route53Result.ResourceRecordSets);
-
-
-  var response = {
-    "statusCode": 200,
-    "headers": {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Credentials': true,
-    },
-    "body": JSON.stringify({message:"Great Job!" + body.Domain})
+  var route53Results = await route53.listResourceRecordSets(params).promise();
+  var route53Record;
+  var currentDNSName;
+  for (var i = 0; i < route53Results.ResourceRecordSets.length; i++) {
+    route53Record = route53Results.ResourceRecordSets[i];
+    var record = route53Results.ResourceRecordSets[i].ResourceRecords[0].Value;
+    var recordName = record.replace("\\052","*").slice(0, -1);
+    if(recordName == body.Domain) {
+      currentDNSName = record;
+      break;
+    }
   }
   
-  callback(null, response);
+  // determine which domain setting to switch too
+  var newDNSName;
+  if(currentDNSName == body.ProductionSetting) {
+    newDNSName = body.DisasterRecoverySetting;
+  } else {
+    newDNSName = body.ProductionSetting;
+  }
+
+  // create the change batch
+  var changeParams = {
+    ChangeBatch: {
+      Changes: [ ]
+    },
+    HostedZoneId: ""
+  };
+  
+  var change = {
+    Action: "UPSERT",
+    ResourceRecordSet: {
+      Name: "",
+      ResourceRecords: [
+        {
+          Value: ""
+        }
+      ],
+      TTL: 0,
+      Type: ""
+    }
+  };
+
+  changeParams.HostedZoneId = body.HostedZoneId // take this from the existing record
+  change.ResourceRecordSet.Name = route53Record.Name // take this from the existing record (if *, include correct chars)
+  change.ResourceRecordSet.ResourceRecords[0].Value = newDNSName // new domain to point to
+  change.ResourceRecordSet.TTL = route53Record.TTL // take this from the existing record
+  change.ResourceRecordSet.Type = route53Record.Type // take this from the existing record
+  changeParams.ChangeBatch.Changes.push(change);
+
+  console.log(changeParams);
+
+  var changeRequest = await route53.changeResourceRecordSets(changeParams).promise();
+
+  changeRequest.then(function(data) {
+    var changeRequestStatus = await route53.getChange({Id:changeRequest.ChangeInfo.Id}).promise();
+    do {
+     changeRequestStatus = await route53.getChange({Id:changeRequest.ChangeInfo.Id}).promise();
+     console.log(changeRequestStatus);
+    }
+    while (changeRequestStatus.Status == "PENDING")
+
+    var response = {
+      "statusCode": 200,
+      "headers": {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      "body": JSON.stringify({result: changeRequest.data})
+    }
+    
+    callback(null, response);
+  }).catch(function(error) {
+    console.error(error);
+    callback(null,{
+      "statusCode": 500,
+      "headers": {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Credentials': true,
+      },
+      "body": JSON.stringify({
+        "message":'Error updated the route53 record'
+      })
+    });
+    return;
+  });
+
+
+
+
 };

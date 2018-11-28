@@ -11,3 +11,7 @@ var BaseModel = Backbone.Model.extend({
         this.set('Date', date);        
     }
 });
+
+var ErrorModel = Backbone.Model.extend({
+    
+})

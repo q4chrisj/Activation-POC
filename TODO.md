@@ -2,20 +2,27 @@
 
 ## To Do
 
-* [ ] Implement JobHistoryDetail
-    * [ ] Api Gateway
-    * [ ] Tester
-    * [ ] App
 * [ ] Figure out view management better.
   * [ ] Implement the BaseView concept with close method and then a generic view controller to render/close views.
-* [ ] Collection sorting, by date, correctly.
-  * [x] Include seconds in date field - dynamo.
-  * [ ] Format dates to local timezone in app
 * [ ] Serve the dashboard out of S3 + cloudfront (with a nice domain).
-* [ ] Handle more than one running activation
+  * [x] S3
+  * [ ] Custom domain
+  * [ ] Cloudfront
+* [ ] Business logic - prevent more than one activation happening at a time.
+* serverless updates:
+  * [ ] Create dynamodb tables
+  * [ ] Create S3 bucket + cloudfront (s3 plugin)
+  * [ ] Create custom domain
 
 ## Done
 
+* [x] Collection sorting, by date, correctly.
+  * [x] Include seconds in date field - dynamo.
+  * [x] Format dates to local timezone in app
+* [x] Implement JobHistoryDetail
+  * [x] Api Gateway
+  * [x] Tester
+  * [x] App
 * [x] JobHistory api gateway should return jobHistory:result.Items, not jobs:result.Items.
 * [x] "Cannot read property 'ApiUrl' of undefined" in jobModel.StartedJob
 * [x] Auto reload various lists etc.

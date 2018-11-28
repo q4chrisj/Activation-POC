@@ -11,8 +11,6 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
   <style>
     #domain-info-toggle button { margin-top:7px; } 
-
-
   </style>
 </head>
 
@@ -139,7 +137,7 @@
     </div>
     <div class="row">
       <div class="col-2" id="domain-info-toggle">
-          <button id="domain-toggle" type="button" class="btn btn-primary">Toggle Domains</button>
+
       </div>
       <div class="col-10" id="domain-info-toggle-status">
 
@@ -178,25 +176,25 @@
   </script>
 
   <script type="text/template" id="domain-info-status-template">
-    <div class="alert alert-info">Updating current dns setting for: <%- Domain %></div>
+    Updating current dns setting for: <%- Domain %>
   </script>
 
   <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
-  <script src="js/underscore-min.js"></script>
-  <script src="js/backbone-min.js"></script>
-  <script src="js/moment.min.js"></script>
-  <script src="js/moment-timezone-with-data.min.js"></script>
+  <script src="js/lib/underscore-min.js"></script>
+  <script src="js/lib/backbone-min.js"></script>
+  <script src="js/lib/moment.min.js"></script>
+  <script src="js/lib/moment-timezone-with-data.min.js"></script>
   <script src="js/config.js"></script>
   <script src="js/controllers.js"></script>
-  <script src="js/baseModel.js"></script>
-  <script src="js/baseView.js"></script>
-  <script src="js/jobModel.js"></script>
-  <script src="js/jobHistoryModel.js"></script>
-  <script src="js/domainInfoModel.js"></script>
-  <script src="js/archivedJobViews.js"></script>
-  <script src="js/currentJobViews.js"></script>
-  <script src="js/domainInfoViews.js"></script>
+  <script src="js/models/baseModel.js"></script>
+  <script src="js/views/baseView.js"></script>
+  <script src="js/models/jobModel.js"></script>
+  <script src="js/models/jobHistoryModel.js"></script>
+  <script src="js/models/domainInfoModel.js"></script>
+  <script src="js/views/archivedJobViews.js"></script>
+  <script src="js/views/currentJobViews.js"></script>
+  <script src="js/views/domainInfoViews.js"></script>
 
   <script>
     window.onload = function() {
