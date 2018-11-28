@@ -13,9 +13,6 @@ var DomainToggleStatusView = Backbone.View.extend({
     className: 'alert alert-info',
     template: _.template($('#domain-info-status-template').html()),
 
-    initialize: function() {
-    },
-
     render: function() {
         console.log('Toggling: ' + this.model.toJSON().Domain);
         this.$el.html(this.template(this.model.toJSON()));
@@ -23,8 +20,6 @@ var DomainToggleStatusView = Backbone.View.extend({
     },
 
     close: function() {
-        console.log("closing DomainToggleStatusView", this);
-
         this.unbind(); // unbind all internal event bindings
         this.remove();
         
@@ -58,12 +53,14 @@ var DomainToggleView = Backbone.View.extend({
 
             item.save({ToggleDomains:true}, {
                 success: function(model, response) {
-                    //console.log(response);
                     toggleStatusView.close();
+                    model.set({'ChangeId':response.result.ChangeInfo.Id});
+                    model.set({'ChangeStatus': response.result.ChangeInfo.Status});
+                    console.log(model);
                 },
                 error: function(model, response) {
                     var errorModel = new ErrorModel();
-                    console.log(response);
+                  
                     errorModel.set({message:'There was an error: ' + response.body})
                 
                     var errorView = new DomainToggleStatusErrorView({model: errorModel})
@@ -82,6 +79,7 @@ var DomainInfoView = Backbone.View.extend({
 
     initialize: function () {
         this.listenTo(this.model, 'change', this.render);
+        console.log(this.model);
     },
 
     render: function () {
@@ -108,7 +106,7 @@ var DomainInfoViewController = Backbone.View.extend({
         this.collection.fetch({
             success: function () {
                 new DomainToggleView({collection:view.collection});
-            }, reset:true
+            }
         });
     },
 

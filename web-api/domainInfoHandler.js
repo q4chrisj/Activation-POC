@@ -94,26 +94,31 @@ module.exports.toggleDomain = async (event, context, callback) => {
     HostedZoneId: body.HostedZoneId
   };
 
+  console.log(body);
+
   var route53Results = await route53.listResourceRecordSets(params).promise();
   var route53Record;
-  var currentDNSName;
   for (var i = 0; i < route53Results.ResourceRecordSets.length; i++) {
     route53Record = route53Results.ResourceRecordSets[i];
     var record = route53Results.ResourceRecordSets[i].ResourceRecords[0].Value;
-    var recordName = record.replace("\\052","*").slice(0, -1);
+    var recordName = record.includes("*") ? record.replace("\\052","*").slice(0, -1) : record;
+    console.log(recordName + "==" + body.Domain);
     if(recordName == body.Domain) {
       currentDNSName = record;
       break;
     }
   }
+
   
   // determine which domain setting to switch too
   var newDNSName;
-  if(currentDNSName == body.ProductionSetting) {
+  if(body.CurrentStatus == "Production") {
     newDNSName = body.DisasterRecoverySetting;
   } else {
     newDNSName = body.ProductionSetting;
   }
+
+  console.log("New DNS Name: " + newDNSName);
 
   // create the change batch
   var changeParams = {
@@ -144,44 +149,15 @@ module.exports.toggleDomain = async (event, context, callback) => {
   change.ResourceRecordSet.Type = route53Record.Type // take this from the existing record
   changeParams.ChangeBatch.Changes.push(change);
 
-  console.log(changeParams);
-
   var changeRequest = await route53.changeResourceRecordSets(changeParams).promise();
-
-  changeRequest.then(function(data) {
-    var changeRequestStatus = await route53.getChange({Id:changeRequest.ChangeInfo.Id}).promise();
-    do {
-     changeRequestStatus = await route53.getChange({Id:changeRequest.ChangeInfo.Id}).promise();
-     console.log(changeRequestStatus);
-    }
-    while (changeRequestStatus.Status == "PENDING")
-
-    var response = {
-      "statusCode": 200,
-      "headers": {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      "body": JSON.stringify({result: changeRequest.data})
-    }
-    
-    callback(null, response);
-  }).catch(function(error) {
-    console.error(error);
-    callback(null,{
-      "statusCode": 500,
-      "headers": {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Credentials': true,
-      },
-      "body": JSON.stringify({
-        "message":'Error updated the route53 record'
-      })
-    });
-    return;
-  });
-
-
-
-
+  var response = {
+    "statusCode": 200,
+    "headers": {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Credentials': true,
+    },
+    "body": JSON.stringify({result: changeRequest})
+  }
+  
+  callback(null, response);
 };
