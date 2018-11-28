@@ -14,7 +14,6 @@ var DomainToggleStatusView = Backbone.View.extend({
     template: _.template($('#domain-info-status-template').html()),
 
     render: function() {
-        console.log('Toggling: ' + this.model.toJSON().Domain);
         this.$el.html(this.template(this.model.toJSON()));
         return this;
     },
@@ -22,10 +21,6 @@ var DomainToggleStatusView = Backbone.View.extend({
     close: function() {
         this.unbind(); // unbind all internal event bindings
         this.remove();
-        
-        delete this.model;
-		delete this.$el; // delete any jQuery wrapped objects
-		delete this.el; // delete the variable reference to this node
     }
 });
 
@@ -56,7 +51,11 @@ var DomainToggleView = Backbone.View.extend({
                     toggleStatusView.close();
                     model.set({'ChangeId':response.result.ChangeInfo.Id});
                     model.set({'ChangeStatus': response.result.ChangeInfo.Status});
-                    console.log(model);
+                    if(model.get('CurrentStatus') == "Production") {
+                        model.set({'CurrentStatus': 'Disaster Recovery'})
+                    } else {
+                        model.set({'CurrentStatus': 'Production'})
+                    }
                 },
                 error: function(model, response) {
                     var errorModel = new ErrorModel();
@@ -69,7 +68,7 @@ var DomainToggleView = Backbone.View.extend({
             }, {wait:true});
         });
 
-        //this.collection.fetch({reset:true});
+        //this.collection.fetch({clear:true});
     }
 });
 
@@ -79,13 +78,18 @@ var DomainInfoView = Backbone.View.extend({
 
     initialize: function () {
         this.listenTo(this.model, 'change', this.render);
-        console.log(this.model);
     },
 
     render: function () {
         this.$el.html(this.template(this.model.toJSON()));
         return this;
     },
+
+    close: function() {
+        console.log("Closing DomainInfoView", this)
+        this.unbind(); // unbind all internal event bindings
+        this.remove();
+    }
 });
 
 var DomainInfoViewController = Backbone.View.extend({
@@ -100,14 +104,26 @@ var DomainInfoViewController = Backbone.View.extend({
 
         this.listenTo(this.collection, 'add', this.addOne);
         this.listenTo(this.collection, 'reset', this.addAll);
-        //this.listenTo(this.collection, 'all', this.render);
+        this.listenTo(this.collection, 'all', this.render);
 
+        this.childViews = [];
         var view = this;
         this.collection.fetch({
             success: function () {
-                new DomainToggleView({collection:view.collection});
+                new DomainToggleView({ collection: view.collection });
             }
         });
+
+        // window.setInterval(function() {
+        //     _.each(view.childViews, function(childView) {
+        //         childView.close();
+        //     });
+        //     view.collection.fetch({
+        //         success: function() {
+        //             new DomainToggleView({ collection: view.collection });
+        //         }
+        //     });
+        // }, 10000);
     },
 
     render: function() {
@@ -116,6 +132,7 @@ var DomainInfoViewController = Backbone.View.extend({
         
     addOne: function (domainInfo) {
         var view = new DomainInfoView({ model: domainInfo });
+        this.childViews.push(view);
         this.$el.append(view.render().el);
     },
 
