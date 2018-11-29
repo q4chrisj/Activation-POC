@@ -24,20 +24,30 @@ module.exports.getDomainInfo = async (event, context, callback) => {
     for (var j = 0; j < route53Results.length; j++) {
 
       var record = route53Results[j];
-      var recordName = record.Name.replace("\\052","*").slice(0, -1);
+      if(record.Type != "NS" && record.Type != "SOA") {
+        var recordName = record.Name.replace("\\052","*").slice(0, -1);
 
-      if(recordName == item.Domain) {
-        var newResult = {
-          DomainId: item.DomainId,
-          DisasterRecoverySetting: item.DisasterRecoverySetting,
-          Domain: item.Domain,
-          HostedZoneId: item.HostedZoneId,
-          ProductionSetting: item.ProductionSetting,
-        };
+        if(recordName == item.Domain) {
+          var currentTarget = record.ResourceRecords[0].Value;
 
-        newResult.CurrentStatus = item.ProductionSetting ? "Production" : "Disaster Recovery"
-  
-        newResults.push(newResult);
+          var newResult = {
+            DomainId: item.DomainId,
+            DisasterRecoverySetting: item.DisasterRecoverySetting,
+            Domain: item.Domain,
+            HostedZoneId: item.HostedZoneId,
+            ProductionSetting: item.ProductionSetting,
+          };
+
+          if(currentTarget == item.ProductionSetting) {
+            newResult.CurrentStatus = "Production"
+          } else if (currentTarget == item.DisasterRecoverySetting) {
+            newResult.CurrentStatus = "Disaster Recovery"
+          } else {
+            newResult.CurrentStatus = "Unknown";
+          }
+    
+          newResults.push(newResult);
+        }
       }
     } 
   }
@@ -55,27 +65,31 @@ module.exports.getDomainInfo = async (event, context, callback) => {
 };
 
 module.exports.toggleDomain = async (event, context, callback) => {
+
   const body = JSON.parse(event.body);
   const params = {
     HostedZoneId: body.HostedZoneId
   };
 
-  console.log(body);
+  console.log("Toggling domain for: " + body.Domain);
 
   var route53Results = await route53.listResourceRecordSets(params).promise();
+
   var route53Record;
+
   for (var i = 0; i < route53Results.ResourceRecordSets.length; i++) {
-    route53Record = route53Results.ResourceRecordSets[i];
-    var record = route53Results.ResourceRecordSets[i].ResourceRecords[0].Value;
-    var recordName = record.includes("*") ? record.replace("\\052","*").slice(0, -1) : record;
-    console.log(recordName + "==" + body.Domain);
+    var item = route53Results.ResourceRecordSets[i];
+    var recordName = item.Name.slice(0, -1); // Route53 includes a trailing . in the name field (*.s3.q4web.com.)
+    if(recordName.includes("\\052")) {
+      recordName = recordName.replace("\\052", "*") // Route53 converts * to \\052 in the name field.
+    }
+
     if(recordName == body.Domain) {
-      currentDNSName = record;
+      route53Record = item;
       break;
     }
   }
 
-  
   // determine which domain setting to switch too
   var newDNSName;
   if(body.CurrentStatus == "Production") {
@@ -83,8 +97,6 @@ module.exports.toggleDomain = async (event, context, callback) => {
   } else {
     newDNSName = body.ProductionSetting;
   }
-
-  console.log("New DNS Name: " + newDNSName);
 
   // create the change batch
   var changeParams = {
@@ -116,6 +128,7 @@ module.exports.toggleDomain = async (event, context, callback) => {
   changeParams.ChangeBatch.Changes.push(change);
 
   var changeRequest = await route53.changeResourceRecordSets(changeParams).promise();
+
   var response = {
     "statusCode": 200,
     "headers": {

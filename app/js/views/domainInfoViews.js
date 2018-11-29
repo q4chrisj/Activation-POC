@@ -43,6 +43,7 @@ var DomainToggleView = Backbone.View.extend({
 
     toggleDomains: function() {
         this.collection.each(function(item) {
+            console.log("Toggle domain for: ", item.get('Domain'));
             var toggleStatusView = new DomainToggleStatusView({model: item});
             $("#domain-info-toggle-status").html(toggleStatusView.render().el);
 
@@ -66,6 +67,7 @@ var DomainToggleView = Backbone.View.extend({
                     $("#domain-info-toggle-status").html(errorView.render().el);
                 }
             }, {wait:true});
+
         });
     }
 });
