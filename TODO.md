@@ -2,6 +2,13 @@
 
 ## To Do
 
+* Domain Management
+  * [ ] Implement with multiple domain examples
+  * [ ] Ensure that we are always switching from a cname to a cname
+  * [ ] Need a function to seed data to this table.
+  * [ ] For each domain, display the current change status.
+* [ ] Trigger code deploy from web app
+* [ ] Implement loading view pattern.
 * [ ] Figure out view management better.
   * [ ] Implement the BaseView concept with close method and then a generic view controller to render/close views.
 * [ ] Serve the dashboard out of S3 + cloudfront (with a nice domain).
